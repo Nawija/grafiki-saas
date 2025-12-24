@@ -28,6 +28,7 @@ import {
     createShifts,
     updateShift,
     deleteShift,
+    deleteShiftsByDateRange,
 } from "@/lib/actions/shift";
 import { getEmployeesByTeam } from "@/lib/actions/employee";
 import { getShiftTemplatesByTeam } from "@/lib/actions/shift-template";
@@ -334,6 +335,20 @@ export default function SchedulePage() {
         }
     }, []);
 
+    const handleDeleteAllShifts = useCallback(async () => {
+        if (!currentTeamId || !displayedDateRange.start || !displayedDateRange.end) return;
+
+        setError(null);
+
+        const result = await deleteShiftsByDateRange(currentTeamId, displayedDateRange.start, displayedDateRange.end);
+        if (result.error) {
+            setError(result.error);
+        } else {
+            setShifts([]);
+            console.log(`🗑️ Usunięto ${result.count} zmian`);
+        }
+    }, [currentTeamId, displayedDateRange]);
+
     // Create shift from template (drag & drop)
     const handleCreateShiftFromTemplate = useCallback(
         async (data: {
@@ -595,6 +610,7 @@ export default function SchedulePage() {
                 templates={templates}
                 onCreateShift={handleCreateShiftFromTemplate}
                 onDeleteShift={handleDeleteShift}
+                onDeleteAllShifts={handleDeleteAllShifts}
                 onDateRangeChange={handleDateRangeChange}
                 onGenerateSchedule={handleGenerateSchedule}
                 onExportPdf={() => handleExport("pdf")}

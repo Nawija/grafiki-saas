@@ -68,6 +68,7 @@ import {
     Filter,
     Calendar,
     ChevronDown,
+    Trash2,
 } from "lucide-react";
 
 import type { Shift, Employee, ShiftTemplate } from "@/types";
@@ -90,6 +91,7 @@ interface MonthlyScheduleViewProps {
         break_duration: number;
     }) => Promise<void>;
     onDeleteShift: (shiftId: string) => Promise<void>;
+    onDeleteAllShifts?: () => Promise<void>;
     onDateRangeChange?: (start: Date, end: Date) => void;
     onGenerateSchedule?: () => void;
     onExportPdf?: () => void;
@@ -469,6 +471,7 @@ export function MonthlyScheduleView({
     templates,
     onCreateShift,
     onDeleteShift,
+    onDeleteAllShifts,
     onDateRangeChange,
     onGenerateSchedule,
     onExportPdf,
@@ -987,6 +990,25 @@ export function MonthlyScheduleView({
                             >
                                 <FileDown className="h-4 w-4 mr-2" />
                                 Excel
+                            </Button>
+                        )}
+                        {onDeleteAllShifts && shifts.length > 0 && (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                                onClick={() => {
+                                    if (
+                                        confirm(
+                                            `Czy na pewno chcesz usunąć wszystkie ${shifts.length} zmian z tego miesiąca?`
+                                        )
+                                    ) {
+                                        onDeleteAllShifts();
+                                    }
+                                }}
+                            >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Usuń grafik
                             </Button>
                         )}
                     </div>

@@ -2,7 +2,7 @@
 // SCHEDULE EXPORT - PDF & EXCEL
 // ===========================================
 
-import { format, startOfWeek, endOfWeek, eachDayOfInterval } from "date-fns";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval } from "date-fns";
 import { pl } from "date-fns/locale";
 import type { Shift, Employee } from "@/types";
 import * as XLSX from "xlsx";
@@ -17,8 +17,8 @@ export function exportScheduleToExcel(
     endDate?: Date
 ) {
     const now = new Date();
-    const start = startDate || startOfWeek(now, { weekStartsOn: 1 });
-    const end = endDate || endOfWeek(now, { weekStartsOn: 1 });
+    const start = startDate || startOfMonth(now);
+    const end = endDate || endOfMonth(now);
 
     // Create employee map
     const employeeMap = new Map(employees.map((e) => [e.id, e]));
@@ -128,8 +128,8 @@ export function exportScheduleToPdf(
     endDate?: Date
 ) {
     const now = new Date();
-    const start = startDate || startOfWeek(now, { weekStartsOn: 1 });
-    const end = endDate || endOfWeek(now, { weekStartsOn: 1 });
+    const start = startDate || startOfMonth(now);
+    const end = endDate || endOfMonth(now);
 
     // Create employee map
     const employeeMap = new Map(employees.map((e) => [e.id, e]));
@@ -420,8 +420,8 @@ export function exportScheduleToCSV(
     endDate?: Date
 ) {
     const now = new Date();
-    const start = startDate || startOfWeek(now, { weekStartsOn: 1 });
-    const end = endDate || endOfWeek(now, { weekStartsOn: 1 });
+    const start = startDate || startOfMonth(now);
+    const end = endDate || endOfMonth(now);
 
     const days = eachDayOfInterval({ start, end });
 

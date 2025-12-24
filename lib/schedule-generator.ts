@@ -189,11 +189,17 @@ export function generateMonthlySchedule(
 
         let shiftsAddedThisPass = 0;
 
-        for (const day of workingDays) {
+        // W przejściach 2+ losowo przetasuj dni i szablony
+        const daysToProcess =
+            pass === 1 ? workingDays : shuffleArray([...workingDays]);
+        const templatesToProcess =
+            pass === 1 ? sortedTemplates : shuffleArray([...sortedTemplates]);
+
+        for (const day of daysToProcess) {
             const dateStr = format(day, "yyyy-MM-dd");
 
             // Dla każdego szablonu zmiany
-            for (const template of sortedTemplates) {
+            for (const template of templatesToProcess) {
                 const templateHours = calculateTemplateHours(template);
 
                 // Znajdź pracowników którzy:
@@ -248,6 +254,13 @@ export function generateMonthlySchedule(
                         // Priorytet: kto ma największy deficyt godzin
                         const needA = a.targetHours - a.assignedHours;
                         const needB = b.targetHours - b.assignedHours;
+                        // W pass 2+ dodaj losowość ±20%
+                        if (pass > 1) {
+                            return (
+                                needB * (0.8 + Math.random() * 0.4) -
+                                needA * (0.8 + Math.random() * 0.4)
+                            );
+                        }
                         return needB - needA;
                     });
 
@@ -447,6 +460,18 @@ function validateSchedule(
             );
         }
     }
+}
+
+/**
+ * Losowo tasuje tablicę (Fisher-Yates shuffle)
+ */
+function shuffleArray<T>(array: T[]): T[] {
+    const result = [...array];
+    for (let i = result.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [result[i], result[j]] = [result[j], result[i]];
+    }
+    return result;
 }
 
 // ===========================================
