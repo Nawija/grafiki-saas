@@ -336,11 +336,20 @@ export default function SchedulePage() {
     }, []);
 
     const handleDeleteAllShifts = useCallback(async () => {
-        if (!currentTeamId || !displayedDateRange.start || !displayedDateRange.end) return;
+        if (
+            !currentTeamId ||
+            !displayedDateRange.start ||
+            !displayedDateRange.end
+        )
+            return;
 
         setError(null);
 
-        const result = await deleteShiftsByDateRange(currentTeamId, displayedDateRange.start, displayedDateRange.end);
+        const result = await deleteShiftsByDateRange(
+            currentTeamId,
+            displayedDateRange.start,
+            displayedDateRange.end
+        );
         if (result.error) {
             setError(result.error);
         } else {
