@@ -19,10 +19,10 @@ interface SidebarProps {
 }
 
 const navigation = [
-    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-    { name: "Grafik", href: "/schedule", icon: CalendarDays },
-    { name: "Pracownicy", href: "/employees", icon: Users },
-    { name: "Ustawienia", href: "/settings", icon: Settings },
+    { name: "Panel", href: "/panel", icon: LayoutDashboard },
+    { name: "Grafik", href: "/grafik", icon: CalendarDays },
+    { name: "Pracownicy", href: "/pracownicy", icon: Users },
+    { name: "Ustawienia", href: "/ustawienia", icon: Settings },
 ];
 
 export function Sidebar({ organizations }: SidebarProps) {
@@ -48,7 +48,7 @@ export function Sidebar({ organizations }: SidebarProps) {
                 {/* Logo */}
                 <div className="flex h-16 shrink-0 items-center">
                     <Link
-                        href={getNavHref("/dashboard")}
+                        href={getNavHref("/panel")}
                         className="flex items-center gap-2"
                     >
                         <span className="text-2xl">🗓️</span>
@@ -141,7 +141,7 @@ export function Sidebar({ organizations }: SidebarProps) {
                                 })}
                                 <li>
                                     <Link
-                                        href="/settings?tab=organizations"
+                                        href="/ustawienia?tab=organizations"
                                         className="group flex gap-x-3 rounded-md p-2 text-sm font-medium leading-6 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
                                     >
                                         <Plus className="h-5 w-5 shrink-0" />

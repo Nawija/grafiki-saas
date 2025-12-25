@@ -57,7 +57,7 @@ export function VerifyCodeForm() {
                 return;
             }
 
-            router.push("/dashboard");
+            router.push("/panel");
             router.refresh();
         } catch {
             setError("Wystąpił błąd podczas weryfikacji");

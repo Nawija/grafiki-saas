@@ -63,7 +63,7 @@ export default async function EmployeesPage({
                     </p>
                 </div>
                 <Button asChild>
-                    <a href="/settings?tab=organizations">
+                    <a href="/ustawienia?tab=organizations">
                         <Plus className="mr-2 h-4 w-4" />
                         Utwórz organizację
                     </a>

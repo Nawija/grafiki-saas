@@ -28,7 +28,7 @@ export function QuickActions({ hasOrganization }: QuickActionsProps) {
                 </CardHeader>
                 <CardContent>
                     <Button asChild>
-                        <Link href="/settings?tab=organizations">
+                        <Link href="/ustawienia?tab=organizations">
                             <Plus className="mr-2 h-4 w-4" />
                             Utwórz organizację
                         </Link>
@@ -42,19 +42,19 @@ export function QuickActions({ hasOrganization }: QuickActionsProps) {
         {
             title: "Nowy grafik",
             description: "Utwórz harmonogram pracy na nowy miesiąc",
-            href: "/schedule?action=new",
+            href: "/grafik?action=new",
             icon: CalendarDays,
         },
         {
             title: "Dodaj pracownika",
             description: "Dodaj nowego pracownika do organizacji",
-            href: "/employees?action=new",
+            href: "/pracownicy?action=new",
             icon: Users,
         },
         {
             title: "Ustawienia",
             description: "Zarządzaj organizacjami i kontem",
-            href: "/settings",
+            href: "/ustawienia",
             icon: Settings,
         },
     ];

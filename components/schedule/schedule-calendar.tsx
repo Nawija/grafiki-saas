@@ -60,6 +60,7 @@ interface Shift {
     end_time: string;
     break_minutes: number;
     notes: string | null;
+    color: string | null;
     employee: {
         id: string;
         first_name: string;
@@ -157,13 +158,38 @@ export function ScheduleCalendar({
         };
     });
 
-    // Oblicz liczbę osób na zmianie dla każdego dnia
+    // Oblicz liczbę osób na zmianie dla każdego dnia - grupuj wg typu zmiany (czas start-end)
     const staffCountByDay = days.map((day) => {
         const dateStr = format(day, "yyyy-MM-dd");
         const dayShifts = shifts.filter((s) => s.date === dateStr);
+
+        // Grupuj zmiany wg kombinacji start_time + end_time (czyli typu zmiany)
+        const shiftsByType = dayShifts.reduce((acc, shift) => {
+            const startTime = shift.start_time.substring(0, 5);
+            const endTime = shift.end_time.substring(0, 5);
+            const key = `${startTime}-${endTime}`;
+
+            if (!acc[key]) {
+                // Znajdź szablon pasujący do tego czasu
+                const template = shiftTemplates.find(
+                    (t) =>
+                        t.start_time.substring(0, 5) === startTime &&
+                        t.end_time.substring(0, 5) === endTime
+                );
+                acc[key] = {
+                    count: 0,
+                    name: template?.name || `${startTime}-${endTime}`,
+                    color: shift.color || template?.color || "#3b82f6",
+                };
+            }
+            acc[key].count++;
+            return acc;
+        }, {} as Record<string, { count: number; name: string; color: string }>);
+
         return {
             date: dateStr,
             count: dayShifts.length,
+            byType: shiftsByType,
         };
     });
 
@@ -407,17 +433,18 @@ export function ScheduleCalendar({
                                             <th
                                                 key={day.toISOString()}
                                                 className={cn(
-                                                    "border p-0.5 sm:p-1 text-center min-w-[45px] sm:min-w-[60px]",
-                                                    isWeekendDay &&
-                                                        "bg-slate-100 dark:bg-slate-700",
+                                                    "border p-0.5 sm:p-1 text-center min-w-11.25 sm:min-w-20",
+                                                    dayOfWeek === 6 &&
+                                                        "bg-slate-200 dark:bg-slate-600",
                                                     isSunday &&
                                                         !isTradingSun &&
-                                                        "bg-red-50 dark:bg-red-950/50",
+                                                        "bg-red-100 dark:bg-red-900/70",
                                                     isSunday &&
                                                         isTradingSun &&
-                                                        "bg-green-50 dark:bg-green-950/50",
+                                                        "bg-green-100 dark:bg-green-900/70",
                                                     holiday &&
-                                                        "bg-red-50 dark:bg-red-950"
+                                                        !isSunday &&
+                                                        "bg-red-100 dark:bg-red-900"
                                                 )}
                                             >
                                                 <div className="text-xs text-muted-foreground">
@@ -426,28 +453,7 @@ export function ScheduleCalendar({
                                                 <div className="font-semibold">
                                                     {format(day, "d")}
                                                 </div>
-                                                {isSunday && (
-                                                    <div
-                                                        className={cn(
-                                                            "text-[10px] flex items-center justify-center gap-0.5",
-                                                            isTradingSun
-                                                                ? "text-green-600 dark:text-green-400"
-                                                                : "text-red-600 dark:text-red-400"
-                                                        )}
-                                                        title={
-                                                            isTradingSun
-                                                                ? "Niedziela handlowa"
-                                                                : "Niedziela niehandlowa"
-                                                        }
-                                                    >
-                                                        <ShoppingBag className="h-3 w-3" />
-                                                        <span>
-                                                            {isTradingSun
-                                                                ? "H"
-                                                                : "NH"}
-                                                        </span>
-                                                    </div>
-                                                )}
+
                                                 {holiday && !isSunday && (
                                                     <div
                                                         className="text-[8px] sm:text-[10px] text-red-600 dark:text-red-400 truncate hidden sm:block"
@@ -458,6 +464,18 @@ export function ScheduleCalendar({
                                                         {holiday.localName.substring(
                                                             0,
                                                             8
+                                                        )}
+                                                    </div>
+                                                )}
+                                                {/* Ikona niedzieli handlowej */}
+                                                {isSunday && (
+                                                    <div className="flex items-center justify-center mt-0.5">
+                                                        {isTradingSun ? (
+                                                            <ShoppingBag className="h-3 w-3 text-green-600 dark:text-green-400" />
+                                                        ) : (
+                                                            <span className="text-[8px] text-red-500 dark:text-red-400">
+                                                                NH
+                                                            </span>
                                                         )}
                                                     </div>
                                                 )}
@@ -482,7 +500,7 @@ export function ScheduleCalendar({
                                             </th>
                                         );
                                     })}
-                                    <th className="border p-1 sm:p-2 text-center min-w-[60px] sm:min-w-[80px]">
+                                    <th className="border p-1 sm:p-2 text-center min-w-15">
                                         <span className="text-xs sm:text-sm">
                                             Suma
                                         </span>
@@ -497,14 +515,6 @@ export function ScheduleCalendar({
                                     >
                                         <td className="border p-1 sm:p-2 sticky left-0 bg-white dark:bg-slate-900 z-10">
                                             <div className="flex items-center gap-1.5 sm:gap-2">
-                                                <div
-                                                    className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full shrink-0"
-                                                    style={{
-                                                        backgroundColor:
-                                                            employee.color ||
-                                                            "#3b82f6",
-                                                    }}
-                                                />
                                                 <div className="min-w-0">
                                                     <div className="font-medium text-xs sm:text-sm truncate">
                                                         <span className="sm:hidden">
@@ -539,7 +549,11 @@ export function ScheduleCalendar({
                                                 employee.id,
                                                 day
                                             );
-                                            const isWeekendDay = isWeekend(day);
+                                            const dayOfWeek = getDay(day);
+                                            const isSaturday = dayOfWeek === 6;
+                                            const isSunday = dayOfWeek === 0;
+                                            const isTradingSun =
+                                                isTradingSunday(day);
                                             const holiday = isHoliday(
                                                 day,
                                                 holidays
@@ -559,15 +573,26 @@ export function ScheduleCalendar({
                                                 <td
                                                     key={day.toISOString()}
                                                     className={cn(
-                                                        "border p-1 text-center transition-all duration-200",
-                                                        isWeekendDay &&
-                                                            "bg-slate-50 dark:bg-slate-800",
-                                                        holiday &&
+                                                        "border p-0 text-center transition-all duration-200 relative",
+                                                        !shift &&
+                                                            isSaturday &&
+                                                            "bg-slate-100 dark:bg-slate-700",
+                                                        !shift &&
+                                                            isSunday &&
+                                                            !isTradingSun &&
+                                                            "bg-red-50 dark:bg-red-900/30",
+                                                        !shift &&
+                                                            isSunday &&
+                                                            isTradingSun &&
+                                                            "bg-green-50 dark:bg-green-900/30",
+                                                        !shift &&
+                                                            holiday &&
+                                                            !isSunday &&
                                                             "bg-red-50/50 dark:bg-red-950/50",
                                                         !shift &&
                                                             "cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700",
                                                         isDragOver &&
-                                                            "bg-primary/20 ring-2 ring-primary ring-inset",
+                                                            "ring-2 ring-primary ring-inset",
                                                         isDragging &&
                                                             "opacity-50"
                                                     )}
@@ -598,110 +623,123 @@ export function ScheduleCalendar({
                                                     }
                                                 >
                                                     {shift ? (
-                                                        <div
-                                                            draggable
-                                                            onDragStart={(e) =>
-                                                                handleDragStart(
-                                                                    e,
-                                                                    shift
-                                                                )
-                                                            }
-                                                            onDragEnd={
-                                                                handleDragEnd
-                                                            }
-                                                            className={cn(
-                                                                "group relative cursor-grab active:cursor-grabbing",
-                                                                "rounded p-0.5 sm:p-1 transition-all hover:scale-105",
-                                                                isDragging &&
-                                                                    "ring-2 ring-primary"
-                                                            )}
-                                                            style={{
-                                                                backgroundColor: `${
-                                                                    employee.color ||
-                                                                    "#3b82f6"
-                                                                }20`,
-                                                                borderLeft: `2px solid ${
-                                                                    employee.color ||
-                                                                    "#3b82f6"
-                                                                }`,
-                                                            }}
-                                                        >
-                                                            <div className="text-[10px] sm:text-xs font-medium leading-tight">
-                                                                <span className="sm:hidden">
-                                                                    {shift.start_time.substring(
-                                                                        0,
-                                                                        5
-                                                                    )}
-                                                                </span>
-                                                                <span className="hidden sm:inline">
-                                                                    {shift.start_time.substring(
-                                                                        0,
-                                                                        5
-                                                                    )}
-                                                                    -
-                                                                    {shift.end_time.substring(
-                                                                        0,
-                                                                        5
-                                                                    )}
-                                                                </span>
-                                                            </div>
-                                                            {/* Action buttons on hover - tylko na większych ekranach */}
-                                                            <div className="hidden sm:flex absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity gap-0.5">
-                                                                <button
-                                                                    onClick={(
-                                                                        e
-                                                                    ) => {
-                                                                        e.stopPropagation();
-                                                                        setSelectedCell(
-                                                                            {
-                                                                                employeeId:
-                                                                                    employee.id,
-                                                                                date: dateStr,
-                                                                            }
-                                                                        );
-                                                                    }}
-                                                                    className="p-1 bg-white dark:bg-slate-800 rounded shadow-sm hover:bg-slate-100 dark:hover:bg-slate-700"
-                                                                    title="Edytuj"
-                                                                >
-                                                                    <svg
-                                                                        className="w-3 h-3"
-                                                                        fill="none"
-                                                                        viewBox="0 0 24 24"
-                                                                        stroke="currentColor"
+                                                        (() => {
+                                                            const matchingTemplate =
+                                                                shiftTemplates.find(
+                                                                    (t) =>
+                                                                        t.start_time.substring(
+                                                                            0,
+                                                                            5
+                                                                        ) ===
+                                                                            shift.start_time.substring(
+                                                                                0,
+                                                                                5
+                                                                            ) &&
+                                                                        t.end_time.substring(
+                                                                            0,
+                                                                            5
+                                                                        ) ===
+                                                                            shift.end_time.substring(
+                                                                                0,
+                                                                                5
+                                                                            )
+                                                                );
+                                                            const shiftColor =
+                                                                shift.color ||
+                                                                matchingTemplate?.color ||
+                                                                "#3b82f6";
+                                                            const templateName =
+                                                                matchingTemplate?.name ||
+                                                                "";
+
+                                                            return (
+                                                                <div className="p-0.5 sm:p-1 h-full">
+                                                                    <div
+                                                                        draggable
+                                                                        onDragStart={(
+                                                                            e
+                                                                        ) =>
+                                                                            handleDragStart(
+                                                                                e,
+                                                                                shift
+                                                                            )
+                                                                        }
+                                                                        onDragEnd={
+                                                                            handleDragEnd
+                                                                        }
+                                                                        onClick={() =>
+                                                                            setSelectedCell(
+                                                                                {
+                                                                                    employeeId:
+                                                                                        employee.id,
+                                                                                    date: dateStr,
+                                                                                }
+                                                                            )
+                                                                        }
+                                                                        className={cn(
+                                                                            "group relative cursor-grab active:cursor-grabbing h-full min-h-[36px] sm:min-h-[42px]",
+                                                                            "flex flex-col items-start justify-between p-1 sm:p-1.5 transition-all hover:scale-[1.03] hover:shadow-md rounded-md",
+                                                                            isDragging &&
+                                                                                "ring-2 ring-white shadow-lg scale-105"
+                                                                        )}
+                                                                        style={{
+                                                                            background: `linear-gradient(135deg, ${shiftColor} 0%, ${shiftColor}dd 100%)`,
+                                                                        }}
                                                                     >
-                                                                        <path
-                                                                            strokeLinecap="round"
-                                                                            strokeLinejoin="round"
-                                                                            strokeWidth={
-                                                                                2
-                                                                            }
-                                                                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                                                                        />
-                                                                    </svg>
-                                                                </button>
-                                                                <button
-                                                                    onClick={(
-                                                                        e
-                                                                    ) => {
-                                                                        e.stopPropagation();
-                                                                        setSwapDialog(
-                                                                            {
-                                                                                shift,
-                                                                                open: true,
-                                                                            }
-                                                                        );
-                                                                    }}
-                                                                    className="p-1 bg-white dark:bg-slate-800 rounded shadow-sm hover:bg-slate-100 dark:hover:bg-slate-700"
-                                                                    title="Zamień z kimś"
-                                                                >
-                                                                    <ArrowLeftRight className="w-3 h-3" />
-                                                                </button>
-                                                            </div>
-                                                        </div>
+                                                                        {/* Godziny - główny tekst */}
+                                                                        <div className="text-[10px] sm:text-xs font-bold text-white leading-tight">
+                                                                            {shift.start_time.substring(
+                                                                                0,
+                                                                                5
+                                                                            )}
+                                                                            <span className="opacity-80">
+                                                                                -
+                                                                            </span>
+                                                                            {shift.end_time.substring(
+                                                                                0,
+                                                                                5
+                                                                            )}
+                                                                        </div>
+
+                                                                        {/* Nazwa szablonu - dolny badge */}
+                                                                        {templateName && (
+                                                                            <div className="text-[7px] sm:text-[8px] font-medium text-white/80 bg-black/20 px-1 rounded leading-tight">
+                                                                                {
+                                                                                    templateName
+                                                                                }
+                                                                            </div>
+                                                                        )}
+
+                                                                        {/* Action button - górny prawy róg */}
+                                                                        <div className="absolute top-0.5 right-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                            <button
+                                                                                onClick={(
+                                                                                    e
+                                                                                ) => {
+                                                                                    e.stopPropagation();
+                                                                                    setSwapDialog(
+                                                                                        {
+                                                                                            shift,
+                                                                                            open: true,
+                                                                                        }
+                                                                                    );
+                                                                                }}
+                                                                                className="p-0.5 bg-white/30 hover:bg-white/50 rounded transition-colors"
+                                                                                title="Zamień z kimś"
+                                                                            >
+                                                                                <ArrowLeftRight className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white" />
+                                                                            </button>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        })()
                                                     ) : (
-                                                        <span className="text-slate-300 dark:text-slate-600 text-sm sm:text-lg">
-                                                            +
-                                                        </span>
+                                                        <div className="h-full min-h-[40px] sm:min-h-[48px] flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors rounded m-0.5 sm:m-1">
+                                                            <span className="text-slate-300 dark:text-slate-600 text-lg sm:text-xl font-light">
+                                                                +
+                                                            </span>
+                                                        </div>
                                                     )}
                                                 </td>
                                             );
@@ -755,19 +793,47 @@ export function ScheduleCalendar({
                                         <td
                                             key={day.date}
                                             className={cn(
-                                                "border p-0.5 sm:p-2 text-center",
+                                                "border p-0.5 sm:p-1 text-center ",
                                                 day.count === 0 &&
-                                                    "text-slate-400 bg-red-50 dark:bg-red-950/30",
+                                                    "bg-gray-50 dark:bg-gray-950/30",
                                                 day.count > 0 &&
                                                     day.count < 3 &&
-                                                    "text-orange-600 bg-orange-50 dark:bg-orange-950/30",
+                                                    "bg-orange-50 dark:bg-orange-950/30",
                                                 day.count >= 3 &&
-                                                    "text-green-600 bg-green-50 dark:bg-green-950/30"
+                                                    "bg-green-50 dark:bg-green-950/30"
                                             )}
                                         >
-                                            <span className="text-sm sm:text-lg font-bold">
-                                                {day.count}
-                                            </span>
+                                            {day.count === 0 ? (
+                                                <span className="text-slate-400 text-sm">
+                                                    0
+                                                </span>
+                                            ) : (
+                                                <div className="flex flex-col items-start gap-0.5">
+                                                    {Object.entries(
+                                                        day.byType
+                                                    ).map(([key, data]) => (
+                                                        <div
+                                                            key={key}
+                                                            className="flex items-center gap-0.5"
+                                                            title={data.name}
+                                                        >
+                                                            <div
+                                                                className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full shrink-0"
+                                                                style={{
+                                                                    backgroundColor:
+                                                                        data.color,
+                                                                }}
+                                                            />
+                                                            <span className="text-[10px] sm:text-xs font-medium">
+                                                                {data.count}
+                                                            </span>
+                                                            <span className="text-[8px] text-muted-foreground hidden sm:inline truncate max-w-[40px]">
+                                                                {data.name}
+                                                            </span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
                                         </td>
                                     ))}
                                     <td className="border p-1 sm:p-2 text-center">
@@ -884,14 +950,6 @@ export function ScheduleCalendar({
                                                     value={emp.id}
                                                 >
                                                     <div className="flex items-center gap-2">
-                                                        <div
-                                                            className="w-3 h-3 rounded-full"
-                                                            style={{
-                                                                backgroundColor:
-                                                                    emp.color ||
-                                                                    "#3b82f6",
-                                                            }}
-                                                        />
                                                         <span>
                                                             {emp.first_name}{" "}
                                                             {emp.last_name}

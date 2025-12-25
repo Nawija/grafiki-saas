@@ -104,7 +104,7 @@ export function Header({ user, organizations = [] }: HeaderProps) {
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem asChild>
                                     <a
-                                        href="/settings"
+                                        href="/ustawienia"
                                         className="cursor-pointer"
                                     >
                                         <User className="mr-2 h-4 w-4" />
@@ -113,7 +113,7 @@ export function Header({ user, organizations = [] }: HeaderProps) {
                                 </DropdownMenuItem>
                                 <DropdownMenuItem asChild>
                                     <a
-                                        href="/settings"
+                                        href="/ustawienia"
                                         className="cursor-pointer"
                                     >
                                         <Settings className="mr-2 h-4 w-4" />

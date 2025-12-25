@@ -24,7 +24,6 @@ export const employeeSchema = z.object({
         .max(12, "Maksymalna liczba godzin to 12")
         .optional()
         .nullable(),
-    color: z.string().min(1, "Kolor jest wymagany"),
 });
 
 export const employeeUpdateSchema = employeeSchema.partial();
@@ -34,22 +33,3 @@ export type EmployeeUpdateFormData = z.infer<typeof employeeUpdateSchema>;
 
 // Aliasy dla zgodności
 export type EmployeeInput = EmployeeFormData;
-
-// Predefiniowane kolory dla pracowników
-export const EMPLOYEE_COLORS = [
-    "#ef4444", // red
-    "#f97316", // orange
-    "#f59e0b", // amber
-    "#84cc16", // lime
-    "#22c55e", // green
-    "#14b8a6", // teal
-    "#06b6d4", // cyan
-    "#0ea5e9", // sky
-    "#3b82f6", // blue
-    "#6366f1", // indigo
-    "#8b5cf6", // violet
-    "#a855f7", // purple
-    "#d946ef", // fuchsia
-    "#ec4899", // pink
-    "#f43f5e", // rose
-];

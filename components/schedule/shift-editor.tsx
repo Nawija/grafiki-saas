@@ -35,6 +35,7 @@ interface ExistingShift {
     end_time: string;
     break_minutes: number;
     notes: string | null;
+    color: string | null;
 }
 
 interface ShiftEditorProps {
@@ -61,9 +62,23 @@ export function ShiftEditor({
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [selectedColor, setSelectedColor] = useState<string>(
+        existingShift?.color || "#3b82f6"
+    );
     const [mode, setMode] = useState<"template" | "custom">(
         templates.length === 0 || !!existingShift ? "custom" : "template"
     );
+
+    const shiftColors = [
+        { name: "Niebieski", value: "#3b82f6" },
+        { name: "Zielony", value: "#22c55e" },
+        { name: "Żółty", value: "#eab308" },
+        { name: "Pomarańczowy", value: "#f97316" },
+        { name: "Czerwony", value: "#ef4444" },
+        { name: "Fioletowy", value: "#a855f7" },
+        { name: "Różowy", value: "#ec4899" },
+        { name: "Cyan", value: "#06b6d4" },
+    ];
 
     const formattedDate = format(parseISO(date), "d MMMM yyyy (EEEE)", {
         locale: pl,
@@ -130,20 +145,40 @@ export function ShiftEditor({
             const supabase = createClient();
 
             if (existingShift) {
-                const { error } = await supabase
+                // Najpierw spróbuj z kolorem
+                let result = await supabase
                     .from("shifts")
                     .update({
                         start_time: data.startTime,
                         end_time: data.endTime,
                         break_minutes: data.breakMinutes,
                         notes: data.notes || null,
+                        color: selectedColor,
                         updated_at: new Date().toISOString(),
                     })
                     .eq("id", existingShift.id);
 
-                if (error) throw error;
+                // Jeśli błąd dotyczy kolumny color, spróbuj bez niej
+                if (
+                    result.error?.code === "PGRST204" &&
+                    result.error?.message?.includes("color")
+                ) {
+                    result = await supabase
+                        .from("shifts")
+                        .update({
+                            start_time: data.startTime,
+                            end_time: data.endTime,
+                            break_minutes: data.breakMinutes,
+                            notes: data.notes || null,
+                            updated_at: new Date().toISOString(),
+                        })
+                        .eq("id", existingShift.id);
+                }
+
+                if (result.error) throw result.error;
             } else {
-                const { error } = await supabase.from("shifts").insert({
+                // Najpierw spróbuj z kolorem
+                let result = await supabase.from("shifts").insert({
                     schedule_id: scheduleId,
                     employee_id: employeeId,
                     date,
@@ -151,15 +186,42 @@ export function ShiftEditor({
                     end_time: data.endTime,
                     break_minutes: data.breakMinutes,
                     notes: data.notes || null,
+                    color: selectedColor,
                 });
 
-                if (error) throw error;
+                // Jeśli błąd dotyczy kolumny color, spróbuj bez niej
+                if (
+                    result.error?.code === "PGRST204" &&
+                    result.error?.message?.includes("color")
+                ) {
+                    result = await supabase.from("shifts").insert({
+                        schedule_id: scheduleId,
+                        employee_id: employeeId,
+                        date,
+                        start_time: data.startTime,
+                        end_time: data.endTime,
+                        break_minutes: data.breakMinutes,
+                        notes: data.notes || null,
+                    });
+                }
+
+                if (result.error) throw result.error;
             }
 
             onOpenChange(false);
             router.refresh();
-        } catch (error) {
-            console.error("Error saving shift:", error);
+        } catch (error: unknown) {
+            const err = error as {
+                message?: string;
+                code?: string;
+                details?: string;
+            };
+            console.error("Error saving shift:", {
+                message: err?.message,
+                code: err?.code,
+                details: err?.details,
+                full: error,
+            });
         } finally {
             setIsLoading(false);
         }
@@ -195,22 +257,56 @@ export function ShiftEditor({
         try {
             const supabase = createClient();
 
-            const { error } = await supabase.from("shifts").insert({
+            // Najpierw spróbuj z kolorem
+            let result = await supabase.from("shifts").insert({
                 schedule_id: scheduleId,
                 employee_id: employeeId,
                 date,
                 start_time: template.start_time.substring(0, 5),
                 end_time: template.end_time.substring(0, 5),
                 break_minutes: template.break_minutes,
+                color: template.color,
                 notes: null,
             });
 
-            if (error) throw error;
+            // Jeśli błąd dotyczy kolumny color, spróbuj bez niej
+            if (
+                result.error?.code === "PGRST204" &&
+                result.error?.message?.includes("color")
+            ) {
+                console.warn(
+                    "Column 'color' not found, inserting without color"
+                );
+                result = await supabase.from("shifts").insert({
+                    schedule_id: scheduleId,
+                    employee_id: employeeId,
+                    date,
+                    start_time: template.start_time.substring(0, 5),
+                    end_time: template.end_time.substring(0, 5),
+                    break_minutes: template.break_minutes,
+                    notes: null,
+                });
+            }
+
+            if (result.error) {
+                console.error("Supabase error:", result.error);
+                throw result.error;
+            }
 
             onOpenChange(false);
             router.refresh();
-        } catch (error) {
-            console.error("Error saving shift:", error);
+        } catch (error: unknown) {
+            const err = error as {
+                message?: string;
+                code?: string;
+                details?: string;
+            };
+            console.error("Error saving shift:", {
+                message: err?.message,
+                code: err?.code,
+                details: err?.details,
+                full: error,
+            });
         } finally {
             setIsLoading(false);
         }
@@ -405,6 +501,29 @@ export function ShiftEditor({
                                 disabled={isLoading}
                                 {...register("notes")}
                             />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label>Kolor zmiany</Label>
+                            <div className="flex flex-wrap gap-2">
+                                {shiftColors.map((color) => (
+                                    <button
+                                        key={color.value}
+                                        type="button"
+                                        onClick={() =>
+                                            setSelectedColor(color.value)
+                                        }
+                                        className={cn(
+                                            "w-8 h-8 rounded-full border-2 transition-all",
+                                            selectedColor === color.value
+                                                ? "border-foreground scale-110"
+                                                : "border-transparent hover:scale-105"
+                                        )}
+                                        style={{ backgroundColor: color.value }}
+                                        title={color.name}
+                                    />
+                                ))}
+                            </div>
                         </div>
 
                         <div className="bg-muted p-3 rounded-lg flex items-center gap-2">

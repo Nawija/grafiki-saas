@@ -29,10 +29,10 @@ interface MobileSidebarProps {
 }
 
 const navigation = [
-    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-    { name: "Grafik", href: "/schedule", icon: CalendarDays },
-    { name: "Pracownicy", href: "/employees", icon: Users },
-    { name: "Ustawienia", href: "/settings", icon: Settings },
+    { name: "Panel", href: "/panel", icon: LayoutDashboard },
+    { name: "Grafik", href: "/grafik", icon: CalendarDays },
+    { name: "Pracownicy", href: "/pracownicy", icon: Users },
+    { name: "Ustawienia", href: "/ustawienia", icon: Settings },
 ];
 
 export function MobileSidebar({
@@ -151,7 +151,7 @@ export function MobileSidebar({
                                 })}
                                 <li>
                                     <Link
-                                        href="/settings?tab=organizations"
+                                        href="/ustawienia?tab=organizations"
                                         onClick={() => onOpenChange(false)}
                                         className="group flex gap-x-3 rounded-md p-3 text-sm font-medium leading-6 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
                                     >

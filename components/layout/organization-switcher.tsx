@@ -56,7 +56,7 @@ export function OrganizationSwitcher({
     if (organizations.length === 0) {
         return (
             <Button variant="outline" className="w-full justify-start" asChild>
-                <a href="/settings?tab=organizations">
+                <a href="/ustawienia?tab=organizations">
                     <Plus className="mr-2 h-4 w-4" />
                     Dodaj organizację
                 </a>
@@ -94,7 +94,7 @@ export function OrganizationSwitcher({
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
                     <a
-                        href="/settings?tab=organizations"
+                        href="/ustawienia?tab=organizations"
                         className="cursor-pointer"
                     >
                         <Plus className="mr-2 h-4 w-4" />

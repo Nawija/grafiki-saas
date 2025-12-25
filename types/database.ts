@@ -110,7 +110,6 @@ export interface Database {
                     phone: string | null;
                     employment_type: "full" | "half" | "custom";
                     custom_hours: number | null;
-                    color: string;
                     is_active: boolean;
                     created_at: string;
                     updated_at: string;
@@ -124,7 +123,6 @@ export interface Database {
                     phone?: string | null;
                     employment_type?: "full" | "half" | "custom";
                     custom_hours?: number | null;
-                    color?: string;
                     is_active?: boolean;
                     created_at?: string;
                     updated_at?: string;
@@ -138,7 +136,6 @@ export interface Database {
                     phone?: string | null;
                     employment_type?: "full" | "half" | "custom";
                     custom_hours?: number | null;
-                    color?: string;
                     is_active?: boolean;
                     created_at?: string;
                     updated_at?: string;
@@ -202,6 +199,7 @@ export interface Database {
                     end_time: string;
                     break_minutes: number;
                     notes: string | null;
+                    color: string | null;
                     created_at: string;
                     updated_at: string;
                 };
@@ -214,6 +212,7 @@ export interface Database {
                     end_time: string;
                     break_minutes?: number;
                     notes?: string | null;
+                    color?: string | null;
                     created_at?: string;
                     updated_at?: string;
                 };
@@ -226,6 +225,7 @@ export interface Database {
                     end_time?: string;
                     break_minutes?: number;
                     notes?: string | null;
+                    color?: string | null;
                     created_at?: string;
                     updated_at?: string;
                 };

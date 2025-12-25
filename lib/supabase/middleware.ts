@@ -50,7 +50,7 @@ export async function updateSession(request: NextRequest) {
 
     // Strona główna - przekieruj zalogowanych do dashboardu
     if (request.nextUrl.pathname === "/" && user) {
-        return NextResponse.redirect(new URL("/dashboard", request.url));
+        return NextResponse.redirect(new URL("/panel", request.url));
     }
 
     // Jeśli użytkownik nie jest zalogowany i próbuje wejść na chronioną stronę
@@ -67,7 +67,7 @@ export async function updateSession(request: NextRequest) {
         !request.nextUrl.pathname.startsWith("/api/auth")
     ) {
         const url = request.nextUrl.clone();
-        url.pathname = "/dashboard";
+        url.pathname = "/panel";
         return NextResponse.redirect(url);
     }
 

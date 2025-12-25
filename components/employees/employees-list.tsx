@@ -69,31 +69,23 @@ export function EmployeesList({
                     <Card key={employee.id}>
                         <CardContent className="p-4">
                             <div className="flex items-start justify-between">
-                                <div className="flex items-center gap-2">
-                                    <div
-                                        className="h-3 w-3 rounded-full flex-shrink-0"
-                                        style={{
-                                            backgroundColor: employee.color,
-                                        }}
-                                    />
-                                    <div>
-                                        <div className="font-medium">
-                                            {employee.first_name}{" "}
-                                            {employee.last_name}
-                                        </div>
-                                        <div className="text-sm text-muted-foreground">
-                                            {getEmploymentTypeLabel(
-                                                employee.employment_type
+                                <div>
+                                    <div className="font-medium">
+                                        {employee.first_name}{" "}
+                                        {employee.last_name}
+                                    </div>
+                                    <div className="text-sm text-muted-foreground">
+                                        {getEmploymentTypeLabel(
+                                            employee.employment_type
+                                        )}
+                                        {employee.employment_type ===
+                                            "custom" &&
+                                            employee.custom_hours && (
+                                                <span className="ml-1">
+                                                    ({employee.custom_hours}
+                                                    h/dzień)
+                                                </span>
                                             )}
-                                            {employee.employment_type ===
-                                                "custom" &&
-                                                employee.custom_hours && (
-                                                    <span className="ml-1">
-                                                        ({employee.custom_hours}
-                                                        h/dzień)
-                                                    </span>
-                                                )}
-                                        </div>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2">
@@ -187,16 +179,7 @@ export function EmployeesList({
                         {employees.map((employee) => (
                             <TableRow key={employee.id}>
                                 <TableCell className="font-medium">
-                                    <div className="flex items-center gap-2">
-                                        <div
-                                            className="h-3 w-3 rounded-full"
-                                            style={{
-                                                backgroundColor: employee.color,
-                                            }}
-                                        />
-                                        {employee.first_name}{" "}
-                                        {employee.last_name}
-                                    </div>
+                                    {employee.first_name} {employee.last_name}
                                 </TableCell>
                                 <TableCell>
                                     <div>

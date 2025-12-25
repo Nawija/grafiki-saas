@@ -95,19 +95,19 @@ export default async function DashboardPage({
             name: "Organizacje",
             value: organizations.length,
             icon: Building2,
-            href: "/settings?tab=organizations",
+            href: "/ustawienia?tab=organizations",
         },
         {
             name: "Pracownicy",
             value: employeeCount,
             icon: Users,
-            href: "/employees",
+            href: "/pracownicy",
         },
         {
             name: "Grafiki",
             value: scheduleCount,
             icon: CalendarDays,
-            href: "/schedule",
+            href: "/grafik",
         },
         {
             name: "Godziny w miesiącu",
@@ -121,7 +121,7 @@ export default async function DashboardPage({
         <div className="space-y-4 sm:space-y-6">
             <div>
                 <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
-                    Dashboard
+                    Panel
                 </h1>
                 <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400">
                     Witaj w systemie zarządzania grafikami pracy

@@ -32,7 +32,7 @@ export function MonthSelector({ year, month }: MonthSelectorProps) {
         const params = new URLSearchParams(searchParams);
         params.set("year", newYear.toString());
         params.set("month", newMonth.toString());
-        router.push(`/schedule?${params.toString()}`);
+        router.push(`/grafik?${params.toString()}`);
     }
 
     function handlePrevMonth() {
