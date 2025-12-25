@@ -21,16 +21,16 @@ ALTER TABLE organization_settings ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies using existing helper functions
 CREATE POLICY "organization_settings_select_policy" ON organization_settings
-    FOR SELECT USING (is_org_member(organization_id));
+    FOR SELECT USING (is_org_member(organization_id, auth.uid()));
 
 CREATE POLICY "organization_settings_insert_policy" ON organization_settings
-    FOR INSERT WITH CHECK (is_org_owner(organization_id));
+    FOR INSERT WITH CHECK (is_org_owner(organization_id, auth.uid()));
 
 CREATE POLICY "organization_settings_update_policy" ON organization_settings
-    FOR UPDATE USING (is_org_owner(organization_id));
+    FOR UPDATE USING (is_org_owner(organization_id, auth.uid()));
 
 CREATE POLICY "organization_settings_delete_policy" ON organization_settings
-    FOR DELETE USING (is_org_owner(organization_id));
+    FOR DELETE USING (is_org_owner(organization_id, auth.uid()));
 
 -- Add comment
 COMMENT ON TABLE organization_settings IS 'Stores organization-specific settings like trading Sundays, default shift duration, etc.';

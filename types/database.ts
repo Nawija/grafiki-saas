@@ -268,6 +268,61 @@ export interface Database {
                 };
                 Relationships: [];
             };
+            employee_preferences: {
+                Row: {
+                    id: string;
+                    employee_id: string;
+                    preferred_days: number[];
+                    unavailable_days: number[];
+                    preferred_start_time: string | null;
+                    preferred_end_time: string | null;
+                    max_hours_per_day: number | null;
+                    max_hours_per_week: number | null;
+                    can_work_weekends: boolean;
+                    can_work_holidays: boolean;
+                    notes: string | null;
+                    created_at: string;
+                    updated_at: string;
+                };
+                Insert: {
+                    id?: string;
+                    employee_id: string;
+                    preferred_days?: number[];
+                    unavailable_days?: number[];
+                    preferred_start_time?: string | null;
+                    preferred_end_time?: string | null;
+                    max_hours_per_day?: number | null;
+                    max_hours_per_week?: number | null;
+                    can_work_weekends?: boolean;
+                    can_work_holidays?: boolean;
+                    notes?: string | null;
+                    created_at?: string;
+                    updated_at?: string;
+                };
+                Update: {
+                    id?: string;
+                    employee_id?: string;
+                    preferred_days?: number[];
+                    unavailable_days?: number[];
+                    preferred_start_time?: string | null;
+                    preferred_end_time?: string | null;
+                    max_hours_per_day?: number | null;
+                    max_hours_per_week?: number | null;
+                    can_work_weekends?: boolean;
+                    can_work_holidays?: boolean;
+                    notes?: string | null;
+                    created_at?: string;
+                    updated_at?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "employee_preferences_employee_id_fkey";
+                        columns: ["employee_id"];
+                        referencedRelation: "employees";
+                        referencedColumns: ["id"];
+                    }
+                ];
+            };
             shift_templates: {
                 Row: {
                     id: string;
@@ -408,3 +463,20 @@ export type Schedule = Tables<"schedules">;
 export type Shift = Tables<"shifts">;
 export type ShiftTemplate = Tables<"shift_templates">;
 export type OrganizationSettings = Tables<"organization_settings">;
+
+// Typ preferencji pracownika
+export interface EmployeePreferences {
+    id: string;
+    employee_id: string;
+    preferred_days: number[];
+    unavailable_days: number[];
+    preferred_start_time: string | null;
+    preferred_end_time: string | null;
+    max_hours_per_day: number | null;
+    max_hours_per_week: number | null;
+    can_work_weekends: boolean;
+    can_work_holidays: boolean;
+    notes: string | null;
+    created_at: string;
+    updated_at: string;
+}

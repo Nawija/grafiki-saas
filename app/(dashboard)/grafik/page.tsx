@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { format } from "date-fns";
 import { pl } from "date-fns/locale";
-import { ScheduleCalendar } from "@/components/schedule/schedule-calendar";
+import { ScheduleCalendar } from "@/components/schedule/schedule-calendar-local";
 import { MonthSelector } from "@/components/schedule/month-selector";
 import { ShiftTemplatesManager } from "@/components/schedule/shift-templates-manager";
 import { ClearScheduleButton } from "@/components/schedule/clear-schedule-button";
@@ -106,6 +106,16 @@ export default async function SchedulePage({
         .eq("organization_id", organizationId)
         .order("name");
 
+    // Pobierz preferencje pracowników
+    const employeeIds = employees?.map((e) => e.id) || [];
+    const { data: employeePreferences } =
+        employeeIds.length > 0
+            ? await supabase
+                  .from("employee_preferences")
+                  .select("*")
+                  .in("employee_id", employeeIds)
+            : { data: [] };
+
     // Pobierz ustawienia organizacji (niedziele handlowe)
     const { data: orgSettings } = await supabase
         .from("organization_settings")
@@ -195,6 +205,7 @@ export default async function SchedulePage({
                 scheduleId={schedule?.id || ""}
                 shiftTemplates={shiftTemplates || []}
                 organizationSettings={orgSettings}
+                employeePreferences={employeePreferences || []}
             />
         </div>
     );

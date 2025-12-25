@@ -34,6 +34,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2, Calendar, ShoppingBag, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface OrganizationSettingsProps {
     organizationId: string;
@@ -68,7 +69,7 @@ export function OrganizationSettingsComponent({
         initialSettings?.default_shift_duration || 8
     );
     const [defaultBreakMinutes, setDefaultBreakMinutes] = useState(
-        initialSettings?.default_break_minutes || 30
+        initialSettings?.default_break_minutes || 0
     );
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
@@ -122,9 +123,12 @@ export function OrganizationSettingsComponent({
                 if (error) throw error;
             }
 
+            toast.success("Ustawienia zostały zapisane");
             router.refresh();
-        } catch (error) {
-            console.error("Error saving settings:", error);
+        } catch (error: any) {
+            const errorMessage = error?.message || error?.details || JSON.stringify(error);
+            console.error("Error saving settings:", errorMessage, error);
+            toast.error(`Błąd podczas zapisywania: ${errorMessage}`);
         } finally {
             setIsSaving(false);
         }
@@ -197,22 +201,17 @@ export function OrganizationSettingsComponent({
                             <SelectContent>
                                 <SelectItem value="all">
                                     <div className="flex items-center gap-2">
-                                        <span>🟢</span>
-                                        <span>
-                                            Wszystkie niedziele handlowe
-                                        </span>
+                                        <span>Wszystkie niedziele</span>
                                     </div>
                                 </SelectItem>
                                 <SelectItem value="none">
                                     <div className="flex items-center gap-2">
-                                        <span>🔴</span>
                                         <span>Brak niedziel handlowych</span>
                                     </div>
                                 </SelectItem>
                                 <SelectItem value="custom">
                                     <div className="flex items-center gap-2">
-                                        <span>🟡</span>
-                                        <span>Wybrane niedziele handlowe</span>
+                                        <span>Wybierz niedziele handlowe</span>
                                     </div>
                                 </SelectItem>
                             </SelectContent>
@@ -230,7 +229,7 @@ export function OrganizationSettingsComponent({
                                             setSelectedYear(parseInt(v))
                                         }
                                     >
-                                        <SelectTrigger className="w-[100px]">
+                                        <SelectTrigger className="w-25">
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>

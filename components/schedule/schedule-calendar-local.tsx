@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
     startOfMonth,
@@ -43,13 +43,15 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { ShiftEditor } from "./shift-editor";
+import { LocalShiftEditor, LocalShift } from "./local-shift-editor";
+import { toast } from "sonner";
 import {
     Users,
     ArrowLeftRight,
     GripVertical,
     Loader2,
-    ShoppingBag,
+    Save,
+    Undo2,
 } from "lucide-react";
 
 interface Shift {
@@ -85,53 +87,78 @@ interface ScheduleCalendarProps {
 
 const DAYS_PL = ["Niedz.", "Pon.", "Wt.", "Śr.", "Czw.", "Pt.", "Sob."];
 
+// Generuj unikalne ID dla nowych zmian
+let tempIdCounter = 0;
+const generateTempId = () => `temp_${Date.now()}_${++tempIdCounter}`;
+
 export function ScheduleCalendar({
     year,
     month,
     holidays,
     employees,
-    shifts,
+    shifts: initialShifts,
     scheduleId,
     shiftTemplates = [],
     organizationSettings,
     employeePreferences = [],
 }: ScheduleCalendarProps) {
     const router = useRouter();
+
+    // LOKALNY STAN ZMIAN
+    const [localShifts, setLocalShifts] = useState<LocalShift[]>(() =>
+        initialShifts.map((s) => ({
+            ...s,
+            _status: "unchanged" as const,
+            _originalId: s.id,
+        }))
+    );
+
     const [selectedCell, setSelectedCell] = useState<{
         employeeId: string;
         date: string;
     } | null>(null);
 
     // Drag & Drop state
-    const [draggedShift, setDraggedShift] = useState<Shift | null>(null);
+    const [draggedShift, setDraggedShift] = useState<LocalShift | null>(null);
     const [dragOverCell, setDragOverCell] = useState<{
         employeeId: string;
         date: string;
     } | null>(null);
-    const [isMoving, setIsMoving] = useState(false);
 
     // Swap dialog state
     const [swapDialog, setSwapDialog] = useState<{
-        shift: Shift;
+        shift: LocalShift;
         open: boolean;
     } | null>(null);
     const [swapTargetEmployee, setSwapTargetEmployee] = useState<string>("");
-    const [isSwapping, setIsSwapping] = useState(false);
+
+    // Saving state
+    const [isSaving, setIsSaving] = useState(false);
 
     const startDate = startOfMonth(new Date(year, month - 1));
     const endDate = endOfMonth(new Date(year, month - 1));
     const days = eachDayOfInterval({ start: startDate, end: endDate });
 
+    // Oblicz czy są niezapisane zmiany
+    const hasUnsavedChanges = useMemo(() => {
+        return localShifts.some((s) => s._status !== "unchanged");
+    }, [localShifts]);
+
+    const pendingChangesCount = useMemo(() => {
+        return localShifts.filter((s) => s._status !== "unchanged").length;
+    }, [localShifts]);
+
+    // Filtruj tylko widoczne zmiany (nie usunięte)
+    const visibleShifts = useMemo(() => {
+        return localShifts.filter((s) => s._status !== "deleted");
+    }, [localShifts]);
+
     // Sprawdź czy dana niedziela jest handlowa
     const isTradingSunday = (date: Date): boolean => {
-        if (getDay(date) !== 0) return false; // Nie niedziela
-
+        if (getDay(date) !== 0) return false;
         const mode = organizationSettings?.trading_sundays_mode || "none";
-
         if (mode === "all") return true;
         if (mode === "none") return false;
-
-        // Custom mode
         const dateStr = format(date, "yyyy-MM-dd");
         return (
             organizationSettings?.custom_trading_sundays?.includes(dateStr) ||
@@ -139,12 +166,12 @@ export function ScheduleCalendar({
         );
     };
 
-    // Oblicz przepracowane godziny dla każdego pracownika
+    // Oblicz przepracowane godziny dla każdego pracownika (używając lokalnych zmian)
     const employeeHours = employees.map((employee) => {
-        const employeeShifts = shifts.filter(
+        const employeeShifts = visibleShifts.filter(
             (s) => s.employee_id === employee.id
         );
-        const workedHours = calculateWorkedHours(employeeShifts);
+        const workedHours = calculateWorkedHours(employeeShifts as any);
         const requiredHours = getRequiredHours(
             year,
             month,
@@ -161,19 +188,17 @@ export function ScheduleCalendar({
         };
     });
 
-    // Oblicz liczbę osób na zmianie dla każdego dnia - grupuj wg typu zmiany (czas start-end)
+    // Oblicz liczbę osób na zmianie dla każdego dnia
     const staffCountByDay = days.map((day) => {
         const dateStr = format(day, "yyyy-MM-dd");
-        const dayShifts = shifts.filter((s) => s.date === dateStr);
+        const dayShifts = visibleShifts.filter((s) => s.date === dateStr);
 
-        // Grupuj zmiany wg kombinacji start_time + end_time (czyli typu zmiany)
         const shiftsByType = dayShifts.reduce((acc, shift) => {
             const startTime = shift.start_time.substring(0, 5);
             const endTime = shift.end_time.substring(0, 5);
             const key = `${startTime}-${endTime}`;
 
             if (!acc[key]) {
-                // Znajdź szablon pasujący do tego czasu
                 const template = shiftTemplates.find(
                     (t) =>
                         t.start_time.substring(0, 5) === startTime &&
@@ -199,9 +224,9 @@ export function ScheduleCalendar({
     function getShiftForCell(
         employeeId: string,
         date: Date
-    ): Shift | undefined {
+    ): LocalShift | undefined {
         const dateStr = format(date, "yyyy-MM-dd");
-        return shifts.find(
+        return visibleShifts.find(
             (s) => s.employee_id === employeeId && s.date === dateStr
         );
     }
@@ -226,26 +251,78 @@ export function ScheduleCalendar({
         return "neutral";
     }
 
-    // Drag handlers
-    const handleDragStart = useCallback((e: React.DragEvent, shift: Shift) => {
-        setDraggedShift(shift);
-        e.dataTransfer.effectAllowed = "move";
-        e.dataTransfer.setData("text/plain", shift.id);
+    // LOKALNY ZAPIS ZMIANY
+    const handleLocalSave = useCallback(
+        (
+            shiftData: Omit<LocalShift, "id" | "_status"> & {
+                _status?: "new" | "modified";
+                _originalId?: string;
+            }
+        ) => {
+            setLocalShifts((prev) => {
+                // Sprawdź czy edytujemy istniejącą zmianę
+                const existingIndex = prev.findIndex(
+                    (s) =>
+                        s.employee_id === shiftData.employee_id &&
+                        s.date === shiftData.date &&
+                        s._status !== "deleted"
+                );
 
-        // Custom drag image
-        const dragImage = document.createElement("div");
-        dragImage.className =
-            "bg-primary text-primary-foreground px-3 py-2 rounded-lg shadow-lg text-sm font-medium";
-        dragImage.textContent = `${shift.start_time.substring(
-            0,
-            5
-        )}-${shift.end_time.substring(0, 5)}`;
-        dragImage.style.position = "absolute";
-        dragImage.style.top = "-1000px";
-        document.body.appendChild(dragImage);
-        e.dataTransfer.setDragImage(dragImage, 50, 20);
-        setTimeout(() => document.body.removeChild(dragImage), 0);
+                if (existingIndex >= 0) {
+                    // Aktualizuj istniejącą
+                    const existing = prev[existingIndex];
+                    const updated = [...prev];
+                    updated[existingIndex] = {
+                        ...shiftData,
+                        id: existing.id,
+                        _status:
+                            existing._status === "new" ? "new" : "modified",
+                        _originalId: existing._originalId,
+                    } as LocalShift;
+                    return updated;
+                } else {
+                    // Dodaj nową
+                    return [
+                        ...prev,
+                        {
+                            ...shiftData,
+                            id: generateTempId(),
+                            _status: "new",
+                        } as LocalShift,
+                    ];
+                }
+            });
+        },
+        []
+    );
+
+    // LOKALNE USUWANIE ZMIANY
+    const handleLocalDelete = useCallback((shiftId: string) => {
+        setLocalShifts((prev) => {
+            const shift = prev.find((s) => s.id === shiftId);
+            if (!shift) return prev;
+
+            // Jeśli to nowa zmiana, po prostu ją usuń
+            if (shift._status === "new") {
+                return prev.filter((s) => s.id !== shiftId);
+            }
+
+            // W przeciwnym razie oznacz jako usuniętą
+            return prev.map((s) =>
+                s.id === shiftId ? { ...s, _status: "deleted" as const } : s
+            );
+        });
     }, []);
+
+    // Drag handlers (lokalnie)
+    const handleDragStart = useCallback(
+        (e: React.DragEvent, shift: LocalShift) => {
+            setDraggedShift(shift);
+            e.dataTransfer.effectAllowed = "move";
+            e.dataTransfer.setData("text/plain", shift.id);
+        },
+        []
+    );
 
     const handleDragOver = useCallback(
         (e: React.DragEvent, employeeId: string, dateStr: string) => {
@@ -261,17 +338,12 @@ export function ScheduleCalendar({
     }, []);
 
     const handleDrop = useCallback(
-        async (
-            e: React.DragEvent,
-            targetEmployeeId: string,
-            targetDate: string
-        ) => {
+        (e: React.DragEvent, targetEmployeeId: string, targetDate: string) => {
             e.preventDefault();
             setDragOverCell(null);
 
             if (!draggedShift) return;
 
-            // Jeśli upuszczono na tę samą komórkę - nic nie rób
             if (
                 draggedShift.employee_id === targetEmployeeId &&
                 draggedShift.date === targetDate
@@ -280,66 +352,42 @@ export function ScheduleCalendar({
                 return;
             }
 
-            setIsMoving(true);
+            // Lokalnie przenieś/zamień zmiany
+            setLocalShifts((prev) => {
+                const sourceShift = prev.find((s) => s.id === draggedShift.id);
+                if (!sourceShift) return prev;
 
-            // Zapisz wartości przed wykonaniem operacji
-            const sourceEmployeeId = draggedShift.employee_id;
-            const sourceDate = draggedShift.date;
-            const sourceShiftId = draggedShift.id;
-
-            try {
-                const supabase = createClient();
-
-                // Sprawdź czy w docelowej komórce jest już zmiana
-                const existingShift = shifts.find(
+                const targetShift = prev.find(
                     (s) =>
                         s.employee_id === targetEmployeeId &&
-                        s.date === targetDate
+                        s.date === targetDate &&
+                        s._status !== "deleted"
                 );
 
-                if (existingShift) {
-                    // Zamień zmiany miejscami - użyj Promise.all dla atomowości
-                    const [result1, result2] = await Promise.all([
-                        supabase
-                            .from("shifts")
-                            .update({
-                                employee_id: targetEmployeeId,
-                                date: targetDate,
-                            })
-                            .eq("id", sourceShiftId),
-                        supabase
-                            .from("shifts")
-                            .update({
-                                employee_id: sourceEmployeeId,
-                                date: sourceDate,
-                            })
-                            .eq("id", existingShift.id),
-                    ]);
-
-                    if (result1.error) throw result1.error;
-                    if (result2.error) throw result2.error;
-                } else {
-                    // Przenieś zmianę
-                    const { error } = await supabase
-                        .from("shifts")
-                        .update({
+                return prev.map((s) => {
+                    if (s.id === sourceShift.id) {
+                        return {
+                            ...s,
                             employee_id: targetEmployeeId,
                             date: targetDate,
-                        })
-                        .eq("id", sourceShiftId);
+                            _status: s._status === "new" ? "new" : "modified",
+                        } as LocalShift;
+                    }
+                    if (targetShift && s.id === targetShift.id) {
+                        return {
+                            ...s,
+                            employee_id: sourceShift.employee_id,
+                            date: sourceShift.date,
+                            _status: s._status === "new" ? "new" : "modified",
+                        } as LocalShift;
+                    }
+                    return s;
+                });
+            });
 
-                    if (error) throw error;
-                }
-
-                router.refresh();
-            } catch (error) {
-                console.error("Error moving shift:", error);
-            } finally {
-                setIsMoving(false);
-                setDraggedShift(null);
-            }
+            setDraggedShift(null);
         },
-        [draggedShift, shifts, router]
+        [draggedShift]
     );
 
     const handleDragEnd = useCallback(() => {
@@ -347,61 +395,173 @@ export function ScheduleCalendar({
         setDragOverCell(null);
     }, []);
 
-    // Swap shift with another employee
-    const handleSwapShift = async () => {
+    // Swap shift lokalnie
+    const handleSwapShift = useCallback(() => {
         if (!swapDialog?.shift || !swapTargetEmployee) return;
 
-        setIsSwapping(true);
-
-        // Zapisz wartości przed wykonaniem operacji
         const sourceShift = swapDialog.shift;
-        const sourceEmployeeId = sourceShift.employee_id;
-        const sourceShiftId = sourceShift.id;
+
+        setLocalShifts((prev) => {
+            const targetShift = prev.find(
+                (s) =>
+                    s.employee_id === swapTargetEmployee &&
+                    s.date === sourceShift.date &&
+                    s._status !== "deleted"
+            );
+
+            return prev.map((s) => {
+                if (s.id === sourceShift.id) {
+                    return {
+                        ...s,
+                        employee_id: swapTargetEmployee,
+                        _status: s._status === "new" ? "new" : "modified",
+                    } as LocalShift;
+                }
+                if (targetShift && s.id === targetShift.id) {
+                    return {
+                        ...s,
+                        employee_id: sourceShift.employee_id,
+                        _status: s._status === "new" ? "new" : "modified",
+                    } as LocalShift;
+                }
+                return s;
+            });
+        });
+
+        setSwapDialog(null);
+        setSwapTargetEmployee("");
+    }, [swapDialog, swapTargetEmployee]);
+
+    // ZAPISZ WSZYSTKIE ZMIANY DO BAZY
+    const handleSaveAllChanges = async () => {
+        setIsSaving(true);
 
         try {
             const supabase = createClient();
 
-            // Znajdź zmianę docelowego pracownika w tym samym dniu
-            const targetShift = shifts.find(
-                (s) =>
-                    s.employee_id === swapTargetEmployee &&
-                    s.date === sourceShift.date
+            const toInsert = localShifts.filter((s) => s._status === "new");
+            const toUpdate = localShifts.filter(
+                (s) => s._status === "modified"
             );
+            const toDelete = localShifts.filter((s) => s._status === "deleted");
 
-            if (targetShift) {
-                // Zamień zmiany - użyj Promise.all dla atomowości
-                const [result1, result2] = await Promise.all([
-                    supabase
-                        .from("shifts")
-                        .update({ employee_id: swapTargetEmployee })
-                        .eq("id", sourceShiftId),
-                    supabase
-                        .from("shifts")
-                        .update({ employee_id: sourceEmployeeId })
-                        .eq("id", targetShift.id),
-                ]);
+            // Usuń zmiany
+            if (toDelete.length > 0) {
+                const deleteIds = toDelete
+                    .map((s) => s._originalId)
+                    .filter(Boolean) as string[];
 
-                if (result1.error) throw result1.error;
-                if (result2.error) throw result2.error;
-            } else {
-                // Tylko przenieś zmianę (swap z pustym)
+                if (deleteIds.length > 0) {
+                    const { error } = await supabase
+                        .from("shifts")
+                        .delete()
+                        .in("id", deleteIds);
+                    if (error) throw error;
+                }
+            }
+
+            // Aktualizuj istniejące
+            for (const shift of toUpdate) {
+                if (!shift._originalId) continue;
                 const { error } = await supabase
                     .from("shifts")
-                    .update({ employee_id: swapTargetEmployee })
-                    .eq("id", sourceShiftId);
-
+                    .update({
+                        employee_id: shift.employee_id,
+                        date: shift.date,
+                        start_time: shift.start_time,
+                        end_time: shift.end_time,
+                        break_minutes: shift.break_minutes,
+                        notes: shift.notes,
+                        updated_at: new Date().toISOString(),
+                    })
+                    .eq("id", shift._originalId);
                 if (error) throw error;
             }
 
-            router.refresh();
-            setSwapDialog(null);
-            setSwapTargetEmployee("");
-        } catch (error) {
-            console.error("Error swapping shift:", error);
+            // Dodaj nowe i pobierz ich ID
+            let insertedShifts: {
+                id: string;
+                employee_id: string;
+                date: string;
+            }[] = [];
+            if (toInsert.length > 0) {
+                const insertData = toInsert.map((s) => ({
+                    schedule_id: scheduleId,
+                    employee_id: s.employee_id,
+                    date: s.date,
+                    start_time: s.start_time,
+                    end_time: s.end_time,
+                    break_minutes: s.break_minutes,
+                    notes: s.notes,
+                }));
+
+                const { data, error } = await supabase
+                    .from("shifts")
+                    .insert(insertData)
+                    .select("id, employee_id, date");
+                if (error) throw error;
+                insertedShifts = data || [];
+            }
+
+            // Po zapisaniu zaktualizuj lokalny stan
+            setLocalShifts((prev) =>
+                prev
+                    .filter((s) => s._status !== "deleted")
+                    .map((s) => {
+                        // Dla nowych zmian, znajdź prawdziwe ID z bazy
+                        if (s._status === "new") {
+                            const inserted = insertedShifts.find(
+                                (ins) =>
+                                    ins.employee_id === s.employee_id &&
+                                    ins.date === s.date
+                            );
+                            return {
+                                ...s,
+                                id: inserted?.id || s.id,
+                                _status: "unchanged" as const,
+                                _originalId: inserted?.id || s.id,
+                            };
+                        }
+                        return {
+                            ...s,
+                            _status: "unchanged" as const,
+                        };
+                    })
+            );
+
+            toast.success(
+                `Zapisano ${
+                    toInsert.length + toUpdate.length + toDelete.length
+                } zmian`
+            );
+        } catch (error: any) {
+            console.error("Error saving changes:", error);
+            console.error("Error details:", JSON.stringify(error, null, 2));
+            const errorMessage =
+                error?.message ||
+                error?.code ||
+                error?.details ||
+                (typeof error === "object"
+                    ? JSON.stringify(error)
+                    : String(error)) ||
+                "Nieznany błąd";
+            toast.error(`Błąd podczas zapisywania: ${errorMessage}`);
         } finally {
-            setIsSwapping(false);
+            setIsSaving(false);
         }
     };
+
+    // ODRZUĆ ZMIANY
+    const handleDiscardChanges = useCallback(() => {
+        setLocalShifts(
+            initialShifts.map((s) => ({
+                ...s,
+                _status: "unchanged" as const,
+                _originalId: s.id,
+            }))
+        );
+        toast.info("Zmiany zostały odrzucone");
+    }, [initialShifts]);
 
     if (employees.length === 0) {
         return (
@@ -417,8 +577,44 @@ export function ScheduleCalendar({
 
     return (
         <>
+            {/* Pasek z przyciskiem zapisu - fixed w prawym górnym rogu */}
+            {hasUnsavedChanges && (
+                <div className="fixed top-4 right-4 z-50 bg-amber-50 dark:bg-amber-950/95 border border-amber-200 dark:border-amber-800 p-3 rounded-xl shadow-lg flex items-center gap-3">
+                    <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                        <span className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                            {pendingChangesCount} zmian
+                        </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleDiscardChanges}
+                            disabled={isSaving}
+                            className="h-8 px-2"
+                        >
+                            <Undo2 className="h-4 w-4" />
+                        </Button>
+                        <Button
+                            size="sm"
+                            onClick={handleSaveAllChanges}
+                            disabled={isSaving}
+                            className="bg-amber-600 hover:bg-amber-700 h-8"
+                        >
+                            {isSaving ? (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : (
+                                <Save className="mr-2 h-4 w-4" />
+                            )}
+                            Zapisz
+                        </Button>
+                    </div>
+                </div>
+            )}
+
             <Card className="overflow-hidden">
-                <CardHeader className="px-6">
+                <CardHeader className="p-3 sm:p-6">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                         <CardTitle className="text-base sm:text-lg">
                             Harmonogram pracy
@@ -445,6 +641,7 @@ export function ScheduleCalendar({
                                             day,
                                             holidays
                                         );
+                                        const isWeekendDay = isWeekend(day);
                                         const isSunday = dayOfWeek === 0;
                                         const isTradingSun =
                                             isTradingSunday(day);
@@ -475,7 +672,6 @@ export function ScheduleCalendar({
                                                 <div className="font-semibold">
                                                     {format(day, "d")}
                                                 </div>
-
                                                 {holiday && !isSunday && (
                                                     <div
                                                         className="text-[8px] sm:text-[10px] text-red-600 dark:text-red-400 truncate hidden sm:block"
@@ -489,8 +685,6 @@ export function ScheduleCalendar({
                                                         )}
                                                     </div>
                                                 )}
-
-                                                {/* Licznik osób na zmianie */}
                                                 <div
                                                     className={cn(
                                                         "flex items-center justify-center gap-0.5 mt-0.5 sm:mt-1 text-[10px] sm:text-xs",
@@ -579,8 +773,6 @@ export function ScheduleCalendar({
                                                 dragOverCell?.date === dateStr;
                                             const isDragging =
                                                 draggedShift?.id === shift?.id;
-
-                                            // Pobierz status preferencji dla tego dnia
                                             const prefStatus =
                                                 getDayPreferenceStatus(
                                                     employee.id,
@@ -592,7 +784,6 @@ export function ScheduleCalendar({
                                                     key={day.toISOString()}
                                                     className={cn(
                                                         "border p-0 text-center transition-all duration-200 relative",
-                                                        // Kolorowanie na podstawie preferencji (najwyższy priorytet dla pustych komórek)
                                                         !shift &&
                                                             prefStatus ===
                                                                 "unavailable" &&
@@ -601,7 +792,6 @@ export function ScheduleCalendar({
                                                             prefStatus ===
                                                                 "preferred" &&
                                                             "bg-green-100 dark:bg-green-900/40",
-                                                        // Standardowe kolorowanie dni (niższy priorytet)
                                                         !shift &&
                                                             prefStatus ===
                                                                 "neutral" &&
@@ -628,7 +818,7 @@ export function ScheduleCalendar({
                                                         !shift &&
                                                             "cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700",
                                                         isDragOver &&
-                                                            "ring-2 ring-primary ring-inset",
+                                                            "ring-2 ring-blue-500 ring-inset rounded-md bg-blue-50 dark:bg-blue-950/30",
                                                         isDragging &&
                                                             "opacity-50"
                                                     )}
@@ -687,6 +877,9 @@ export function ScheduleCalendar({
                                                             const templateName =
                                                                 matchingTemplate?.name ||
                                                                 "";
+                                                            const isModified =
+                                                                shift._status !==
+                                                                "unchanged";
 
                                                             return (
                                                                 <div className="p-0.5 sm:p-1 h-full">
@@ -716,13 +909,19 @@ export function ScheduleCalendar({
                                                                             "group relative cursor-grab active:cursor-grabbing h-full min-h-[36px] sm:min-h-[42px]",
                                                                             "flex flex-col items-start justify-between p-1 sm:p-1.5 transition-all hover:scale-[1.03] hover:shadow-md rounded-md",
                                                                             isDragging &&
-                                                                                "ring-2 ring-white shadow-lg scale-105"
+                                                                                "ring-2 ring-white shadow-lg scale-105",
+                                                                            isModified &&
+                                                                                "ring-2 ring-amber-400"
                                                                         )}
                                                                         style={{
                                                                             background: `linear-gradient(135deg, ${shiftColor} 0%, ${shiftColor}dd 100%)`,
                                                                         }}
                                                                     >
-                                                                        {/* Godziny - główny tekst */}
+                                                                        {/* Wskaźnik niezapisanej zmiany */}
+                                                                        {isModified && (
+                                                                            <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-amber-400 border-2 border-white" />
+                                                                        )}
+
                                                                         <div className="text-[10px] sm:text-xs font-bold text-white leading-tight">
                                                                             {shift.start_time.substring(
                                                                                 0,
@@ -737,7 +936,6 @@ export function ScheduleCalendar({
                                                                             )}
                                                                         </div>
 
-                                                                        {/* Nazwa szablonu - dolny badge */}
                                                                         {templateName && (
                                                                             <div className="text-[7px] sm:text-[8px] font-medium text-white/80 bg-black/20 px-1 rounded leading-tight">
                                                                                 {
@@ -746,8 +944,7 @@ export function ScheduleCalendar({
                                                                             </div>
                                                                         )}
 
-                                                                        {/* Action button - górny prawy róg */}
-                                                                        <div className="absolute top-0.5 right-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                        <div className="absolute bottom-0.5 right-0.5 sm:bottom-1 sm:right-1 opacity-0 group-hover:opacity-100 transition-opacity flex gap-0.5">
                                                                             <button
                                                                                 onClick={(
                                                                                     e
@@ -772,7 +969,6 @@ export function ScheduleCalendar({
                                                         })()
                                                     ) : (
                                                         <div className="h-full min-h-[40px] sm:min-h-[48px] flex flex-col items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors rounded m-0.5 sm:m-1 relative">
-                                                            {/* Wskaźnik preferencji */}
                                                             {prefStatus ===
                                                                 "preferred" && (
                                                                 <div
@@ -829,39 +1025,23 @@ export function ScheduleCalendar({
                                     </tr>
                                 ))}
                             </tbody>
-                            {/* Footer z podsumowaniem dziennym */}
                             <tfoot>
                                 <tr className="bg-slate-100 dark:bg-slate-800 font-medium">
                                     <td className="border p-1 sm:p-2 sticky left-0 bg-slate-100 dark:bg-slate-800 z-10">
-                                        <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm">
-                                            <Users className="h-3 w-3 sm:h-4 sm:w-4" />
-                                            <span className="hidden sm:inline">
-                                                Obsada
-                                            </span>
-                                        </div>
+                                        <span className="text-xs sm:text-sm">
+                                            Obsada
+                                        </span>
                                     </td>
-                                    {staffCountByDay.map((day) => (
+                                    {days.map((day, idx) => (
                                         <td
-                                            key={day.date}
-                                            className={cn(
-                                                "border p-0.5 sm:p-1 text-center ",
-                                                day.count === 0 &&
-                                                    "bg-gray-50 dark:bg-gray-950/30",
-                                                day.count > 0 &&
-                                                    day.count < 3 &&
-                                                    "bg-orange-50 dark:bg-orange-950/30",
-                                                day.count >= 3 &&
-                                                    "bg-green-50 dark:bg-green-950/30"
-                                            )}
+                                            key={day.toISOString()}
+                                            className="border p-0.5 sm:p-1 text-center"
                                         >
-                                            {day.count === 0 ? (
-                                                <span className="text-slate-400 text-sm">
-                                                    0
-                                                </span>
-                                            ) : (
-                                                <div className="flex flex-col items-start gap-0.5">
+                                            {staffCountByDay[idx].count > 0 && (
+                                                <div className="flex flex-col gap-0.5 items-center">
                                                     {Object.entries(
-                                                        day.byType
+                                                        staffCountByDay[idx]
+                                                            .byType
                                                     ).map(([key, data]) => (
                                                         <div
                                                             key={key}
@@ -921,30 +1101,24 @@ export function ScheduleCalendar({
                                 <div className="w-3 h-3 rounded-full bg-red-500" />
                                 <span>Niedostępny</span>
                             </div>
+                            <div className="flex items-center gap-1.5 ml-4">
+                                <div className="w-3 h-3 rounded-full bg-amber-400" />
+                                <span>Niezapisana zmiana</span>
+                            </div>
                         </div>
                     </div>
                 )}
             </Card>
 
-            {/* Loading overlay for drag operations */}
-            {isMoving && (
-                <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50">
-                    <div className="bg-white dark:bg-slate-800 rounded-lg p-4 shadow-xl flex items-center gap-3">
-                        <Loader2 className="h-5 w-5 animate-spin" />
-                        <span>Przenoszenie zmiany...</span>
-                    </div>
-                </div>
-            )}
-
-            {/* Shift Editor Dialog */}
+            {/* Local Shift Editor Dialog */}
             {selectedCell && (
-                <ShiftEditor
+                <LocalShiftEditor
                     open={!!selectedCell}
                     onOpenChange={(open) => !open && setSelectedCell(null)}
                     scheduleId={scheduleId}
                     employeeId={selectedCell.employeeId}
                     date={selectedCell.date}
-                    existingShift={shifts.find(
+                    existingShift={visibleShifts.find(
                         (s) =>
                             s.employee_id === selectedCell.employeeId &&
                             s.date === selectedCell.date
@@ -953,6 +1127,8 @@ export function ScheduleCalendar({
                         employees.find((e) => e.id === selectedCell.employeeId)!
                     }
                     templates={shiftTemplates}
+                    onSave={handleLocalSave}
+                    onDelete={handleLocalDelete}
                 />
             )}
 
@@ -1006,7 +1182,7 @@ export function ScheduleCalendar({
                                         .map((emp) => {
                                             const hasShift =
                                                 swapDialog?.shift &&
-                                                shifts.some(
+                                                visibleShifts.some(
                                                     (s) =>
                                                         s.employee_id ===
                                                             emp.id &&
@@ -1042,7 +1218,7 @@ export function ScheduleCalendar({
 
                         {swapTargetEmployee && swapDialog?.shift && (
                             <div className="p-3 bg-muted rounded-lg text-sm">
-                                {shifts.some(
+                                {visibleShifts.some(
                                     (s) =>
                                         s.employee_id === swapTargetEmployee &&
                                         s.date === swapDialog.shift.date
@@ -1069,11 +1245,8 @@ export function ScheduleCalendar({
                             </Button>
                             <Button
                                 onClick={handleSwapShift}
-                                disabled={!swapTargetEmployee || isSwapping}
+                                disabled={!swapTargetEmployee}
                             >
-                                {isSwapping && (
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                )}
                                 Zamień
                             </Button>
                         </div>

@@ -26,10 +26,12 @@ import {
     Mail,
     Phone,
     Users,
+    Settings2,
 } from "lucide-react";
 import { getEmploymentTypeLabel } from "@/lib/utils/work-hours";
 import { EditEmployeeDialog } from "./edit-employee-dialog";
 import { DeleteEmployeeDialog } from "./delete-employee-dialog";
+import { EmployeePreferencesDialog } from "./employee-preferences-dialog";
 
 interface EmployeesListProps {
     employees: Employee[];
@@ -46,6 +48,8 @@ export function EmployeesList({
     const [deletingEmployee, setDeletingEmployee] = useState<Employee | null>(
         null
     );
+    const [preferencesEmployee, setPreferencesEmployee] =
+        useState<Employee | null>(null);
 
     if (employees.length === 0) {
         return (
@@ -89,17 +93,17 @@ export function EmployeesList({
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <Badge
-                                        variant={
-                                            employee.is_active
-                                                ? "default"
-                                                : "secondary"
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() =>
+                                            setPreferencesEmployee(employee)
                                         }
+                                        className="h-7 text-xs"
                                     >
-                                        {employee.is_active
-                                            ? "Aktywny"
-                                            : "Nieaktywny"}
-                                    </Badge>
+                                        <Settings2 className="mr-1 h-3 w-3" />
+                                        Preferencje
+                                    </Button>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                             <Button
@@ -118,6 +122,16 @@ export function EmployeesList({
                                             >
                                                 <Pencil className="mr-2 h-4 w-4" />
                                                 Edytuj
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem
+                                                onClick={() =>
+                                                    setPreferencesEmployee(
+                                                        employee
+                                                    )
+                                                }
+                                            >
+                                                <Settings2 className="mr-2 h-4 w-4" />
+                                                Preferencje
                                             </DropdownMenuItem>
                                             <DropdownMenuItem
                                                 onClick={() =>
@@ -171,7 +185,7 @@ export function EmployeesList({
                             <TableHead className="hidden md:table-cell">
                                 Kontakt
                             </TableHead>
-                            <TableHead>Status</TableHead>
+                            <TableHead>Preferencje</TableHead>
                             <TableHead className="w-[50px]"></TableHead>
                         </TableRow>
                     </TableHeader>
@@ -219,17 +233,16 @@ export function EmployeesList({
                                     </div>
                                 </TableCell>
                                 <TableCell>
-                                    <Badge
-                                        variant={
-                                            employee.is_active
-                                                ? "default"
-                                                : "secondary"
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() =>
+                                            setPreferencesEmployee(employee)
                                         }
                                     >
-                                        {employee.is_active
-                                            ? "Aktywny"
-                                            : "Nieaktywny"}
-                                    </Badge>
+                                        <Settings2 className="mr-2 h-4 w-4" />
+                                        Ustawienia
+                                    </Button>
                                 </TableCell>
                                 <TableCell>
                                     <DropdownMenu>
@@ -280,6 +293,16 @@ export function EmployeesList({
                     employee={deletingEmployee}
                     open={!!deletingEmployee}
                     onOpenChange={(open) => !open && setDeletingEmployee(null)}
+                />
+            )}
+
+            {preferencesEmployee && (
+                <EmployeePreferencesDialog
+                    employee={preferencesEmployee}
+                    open={!!preferencesEmployee}
+                    onOpenChange={(open) =>
+                        !open && setPreferencesEmployee(null)
+                    }
                 />
             )}
         </>
