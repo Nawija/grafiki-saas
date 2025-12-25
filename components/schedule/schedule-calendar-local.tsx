@@ -30,13 +30,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { LocalShiftEditor, LocalShift } from "./local-shift-editor";
 import { toast } from "sonner";
-import {
-    Users,
-    GripVertical,
-    Loader2,
-    Save,
-    Undo2,
-} from "lucide-react";
+import { Users, GripVertical, Loader2, Save, Undo2 } from "lucide-react";
 
 interface Shift {
     id: string;
@@ -385,61 +379,79 @@ export function ScheduleCalendar({
             );
             const toDelete = localShifts.filter((s) => s._status === "deleted");
 
-            // Usuń zmiany
-            if (toDelete.length > 0) {
-                const deleteIds = toDelete
-                    .map((s) => s._originalId)
-                    .filter(Boolean) as string[];
+            console.log("=== SAVE ALL CHANGES ===");
+            console.log("To insert:", toInsert.length);
+            console.log("To update:", toUpdate.length);
+            console.log("To delete:", toDelete.length);
 
-                if (deleteIds.length > 0) {
-                    const { error } = await supabase
-                        .from("shifts")
-                        .delete()
-                        .in("id", deleteIds);
-                    if (error) throw error;
+            // Jeśli nie ma żadnych zmian, po prostu zamknij
+            if (
+                toInsert.length === 0 &&
+                toUpdate.length === 0 &&
+                toDelete.length === 0
+            ) {
+                console.log("No changes to save");
+                setIsSaving(false);
+                return;
+            }
+
+            // Zbierz wszystkie ID do usunięcia (deleted + modified)
+            const allIdsToDelete = [
+                ...toDelete.map((s) => s._originalId),
+                ...toUpdate.map((s) => s._originalId),
+            ].filter(Boolean) as string[];
+
+            // KROK 1: Usuń wszystko co trzeba (deleted + stare wersje modified)
+            if (allIdsToDelete.length > 0) {
+                console.log("Deleting all shifts:", allIdsToDelete);
+                const { error } = await supabase
+                    .from("shifts")
+                    .delete()
+                    .in("id", allIdsToDelete);
+                if (error) {
+                    console.error("Delete error:", error);
+                    throw error;
                 }
             }
 
-            // Aktualizuj istniejące
-            for (const shift of toUpdate) {
-                if (!shift._originalId) continue;
-                const { error } = await supabase
-                    .from("shifts")
-                    .update({
-                        employee_id: shift.employee_id,
-                        date: shift.date,
-                        start_time: shift.start_time,
-                        end_time: shift.end_time,
-                        break_minutes: shift.break_minutes,
-                        notes: shift.notes,
-                        updated_at: new Date().toISOString(),
-                    })
-                    .eq("id", shift._originalId);
-                if (error) throw error;
-            }
+            // KROK 2: Przygotuj wszystkie dane do wstawienia (new + modified)
+            const allToInsert = [...toInsert, ...toUpdate];
 
-            // Dodaj nowe i pobierz ich ID
+            // Usuń duplikaty (ta sama kombinacja employee_id + date)
+            const uniqueInserts = allToInsert.reduce((acc, shift) => {
+                const key = `${shift.employee_id}_${shift.date}`;
+                // Jeśli jest duplikat, zachowaj ostatnią wersję
+                acc.set(key, shift);
+                return acc;
+            }, new Map<string, LocalShift>());
+
+            const insertData = Array.from(uniqueInserts.values()).map((s) => ({
+                schedule_id: scheduleId,
+                employee_id: s.employee_id,
+                date: s.date,
+                start_time: s.start_time,
+                end_time: s.end_time,
+                break_minutes: s.break_minutes,
+                notes: s.notes,
+            }));
+
             let insertedShifts: {
                 id: string;
                 employee_id: string;
                 date: string;
             }[] = [];
-            if (toInsert.length > 0) {
-                const insertData = toInsert.map((s) => ({
-                    schedule_id: scheduleId,
-                    employee_id: s.employee_id,
-                    date: s.date,
-                    start_time: s.start_time,
-                    end_time: s.end_time,
-                    break_minutes: s.break_minutes,
-                    notes: s.notes,
-                }));
 
+            if (insertData.length > 0) {
+                console.log("Inserting all shifts:", insertData);
                 const { data, error } = await supabase
                     .from("shifts")
                     .insert(insertData)
                     .select("id, employee_id, date");
-                if (error) throw error;
+                if (error) {
+                    console.error("Insert error:", error);
+                    throw error;
+                }
+                console.log("Inserted shifts result:", data);
                 insertedShifts = data || [];
             }
 
@@ -448,8 +460,8 @@ export function ScheduleCalendar({
                 prev
                     .filter((s) => s._status !== "deleted")
                     .map((s) => {
-                        // Dla nowych zmian, znajdź prawdziwe ID z bazy
-                        if (s._status === "new") {
+                        // Dla nowych i zmodyfikowanych zmian, znajdź prawdziwe ID z bazy
+                        if (s._status === "new" || s._status === "modified") {
                             const inserted = insertedShifts.find(
                                 (ins) =>
                                     ins.employee_id === s.employee_id &&
