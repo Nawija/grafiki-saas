@@ -35,7 +35,7 @@ const features = [
 
 export default function Home() {
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
+        <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
             {/* Header */}
             <header className="container mx-auto px-4 py-6">
                 <nav className="flex items-center justify-between">

@@ -35,22 +35,22 @@ export async function updateSession(request: NextRequest) {
 
     // Ścieżki publiczne - nie wymagają logowania
     const publicPaths = [
+        "/",
         "/logowanie",
         "/rejestracja",
         "/weryfikacja",
         "/reset-hasla",
         "/api/auth",
     ];
-    const isPublicPath = publicPaths.some((path) =>
-        request.nextUrl.pathname.startsWith(path)
+    const isPublicPath = publicPaths.some(
+        (path) =>
+            request.nextUrl.pathname === path ||
+            (path !== "/" && request.nextUrl.pathname.startsWith(path))
     );
 
     // Strona główna - przekieruj zalogowanych do dashboardu
-    if (request.nextUrl.pathname === "/") {
-        if (user) {
-            return NextResponse.redirect(new URL("/dashboard", request.url));
-        }
-        return NextResponse.redirect(new URL("/logowanie", request.url));
+    if (request.nextUrl.pathname === "/" && user) {
+        return NextResponse.redirect(new URL("/dashboard", request.url));
     }
 
     // Jeśli użytkownik nie jest zalogowany i próbuje wejść na chronioną stronę
