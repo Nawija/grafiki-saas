@@ -11,7 +11,7 @@ import {
     getDay,
 } from "date-fns";
 import { pl } from "date-fns/locale";
-import { Employee } from "@/types/database";
+import { Employee, ShiftTemplate } from "@/types/database";
 import { PublicHoliday } from "@/types";
 import { isHoliday } from "@/lib/api/holidays";
 import {
@@ -49,6 +49,7 @@ interface ScheduleCalendarProps {
     employees: Employee[];
     shifts: Shift[];
     scheduleId: string;
+    shiftTemplates?: ShiftTemplate[];
 }
 
 const DAYS_PL = ["Niedz.", "Pon.", "Wt.", "Śr.", "Czw.", "Pt.", "Sob."];
@@ -60,6 +61,7 @@ export function ScheduleCalendar({
     employees,
     shifts,
     scheduleId,
+    shiftTemplates = [],
 }: ScheduleCalendarProps) {
     const [selectedCell, setSelectedCell] = useState<{
         employeeId: string;
@@ -295,6 +297,7 @@ export function ScheduleCalendar({
                     employee={
                         employees.find((e) => e.id === selectedCell.employeeId)!
                     }
+                    templates={shiftTemplates}
                 />
             )}
         </>

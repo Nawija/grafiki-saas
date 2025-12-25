@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -10,7 +10,7 @@ import {
     validateShiftTimes,
 } from "@/lib/validations/schedule";
 import { createClient } from "@/lib/supabase/client";
-import { Employee } from "@/types/database";
+import { Employee, ShiftTemplate } from "@/types/database";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,7 +21,14 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-import { Loader2, Trash2 } from "lucide-react";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { Loader2, Trash2, Clock } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { pl } from "date-fns/locale";
 
@@ -44,6 +51,7 @@ interface ShiftEditorProps {
     date: string;
     existingShift?: ExistingShift;
     employee: Employee;
+    templates?: ShiftTemplate[];
 }
 
 export function ShiftEditor({
@@ -54,6 +62,7 @@ export function ShiftEditor({
     date,
     existingShift,
     employee,
+    templates = [],
 }: ShiftEditorProps) {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
@@ -68,6 +77,8 @@ export function ShiftEditor({
         handleSubmit,
         formState: { errors },
         setError,
+        setValue,
+        watch,
     } = useForm<ShiftInput>({
         resolver: zodResolver(shiftSchema),
         defaultValues: {
@@ -79,6 +90,35 @@ export function ShiftEditor({
             notes: existingShift?.notes || "",
         },
     });
+
+    const startTime = watch("startTime");
+    const endTime = watch("endTime");
+    const breakMinutes = watch("breakMinutes");
+
+    function applyTemplate(templateId: string) {
+        const template = templates.find((t) => t.id === templateId);
+        if (template) {
+            setValue("startTime", template.start_time.substring(0, 5));
+            setValue("endTime", template.end_time.substring(0, 5));
+            setValue("breakMinutes", template.break_minutes);
+        }
+    }
+
+    function calculateWorkHours(): string {
+        if (!startTime || !endTime) return "0h";
+        
+        const [startH, startM] = startTime.split(":").map(Number);
+        const [endH, endM] = endTime.split(":").map(Number);
+        
+        let totalMinutes = (endH * 60 + endM) - (startH * 60 + startM);
+        if (totalMinutes < 0) totalMinutes += 24 * 60;
+        totalMinutes -= (breakMinutes || 0);
+        
+        const hours = Math.floor(totalMinutes / 60);
+        const mins = totalMinutes % 60;
+        
+        return mins > 0 ? `${hours}h ${mins}min` : `${hours}h`;
+    }
 
     async function onSubmit(data: ShiftInput) {
         // Walidacja czasów
@@ -174,6 +214,34 @@ export function ShiftEditor({
                     <input type="hidden" {...register("employeeId")} />
                     <input type="hidden" {...register("date")} />
 
+                    {/* Wybór szablonu */}
+                    {templates.length > 0 && !existingShift && (
+                        <div className="space-y-2">
+                            <Label>Użyj szablonu</Label>
+                            <Select onValueChange={applyTemplate}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Wybierz szablon..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {templates.map((template) => (
+                                        <SelectItem key={template.id} value={template.id}>
+                                            <div className="flex items-center gap-2">
+                                                <div
+                                                    className="w-3 h-3 rounded-full"
+                                                    style={{ backgroundColor: template.color }}
+                                                />
+                                                <span>{template.name}</span>
+                                                <span className="text-muted-foreground text-xs">
+                                                    ({template.start_time.substring(0, 5)} - {template.end_time.substring(0, 5)})
+                                                </span>
+                                            </div>
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    )}
+
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label htmlFor="startTime">Od</Label>
@@ -233,6 +301,17 @@ export function ShiftEditor({
                             disabled={isLoading}
                             {...register("notes")}
                         />
+                    </div>
+
+                    {/* Podsumowanie czasu pracy */}
+                    <div className="bg-muted p-3 rounded-lg flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">
+                            Czas pracy:{" "}
+                            <span className="font-medium text-foreground">
+                                {calculateWorkHours()}
+                            </span>
+                        </span>
                     </div>
 
                     <div className="flex justify-between pt-4">

@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { SettingsTabs } from "@/components/settings/settings-tabs";
+import { cookies } from "next/headers";
 
 export default async function SettingsPage({
     searchParams,
@@ -55,6 +56,34 @@ export default async function SettingsPage({
                 (m.organizations as { owner_id: string }).owner_id === user.id,
         })) || [];
 
+    // Pobierz aktualną organizację z cookie
+    const cookieStore = await cookies();
+    const currentOrgId = cookieStore.get("current_organization")?.value;
+    const currentOrg = organizations.find((o) => o.id === currentOrgId) || organizations[0];
+
+    // Pobierz szablony zmian dla aktualnej organizacji
+    let shiftTemplates: Array<{
+        id: string;
+        organization_id: string;
+        name: string;
+        start_time: string;
+        end_time: string;
+        break_minutes: number;
+        color: string;
+        created_at: string;
+        updated_at: string;
+    }> = [];
+    
+    if (currentOrg) {
+        const { data: templates } = await supabase
+            .from("shift_templates")
+            .select("*")
+            .eq("organization_id", currentOrg.id)
+            .order("name");
+        
+        shiftTemplates = templates || [];
+    }
+
     const defaultTab = params.tab || "profile";
 
     return (
@@ -73,6 +102,8 @@ export default async function SettingsPage({
                 organizations={organizations}
                 defaultTab={defaultTab}
                 userId={user.id}
+                shiftTemplates={shiftTemplates}
+                currentOrganizationId={currentOrg?.id}
             />
         </div>
     );

@@ -268,12 +268,54 @@ export interface Database {
                 };
                 Relationships: [];
             };
+            shift_templates: {
+                Row: {
+                    id: string;
+                    organization_id: string;
+                    name: string;
+                    start_time: string;
+                    end_time: string;
+                    break_minutes: number;
+                    color: string;
+                    created_at: string;
+                    updated_at: string;
+                };
+                Insert: {
+                    id?: string;
+                    organization_id: string;
+                    name: string;
+                    start_time: string;
+                    end_time: string;
+                    break_minutes?: number;
+                    color?: string;
+                    created_at?: string;
+                    updated_at?: string;
+                };
+                Update: {
+                    id?: string;
+                    organization_id?: string;
+                    name?: string;
+                    start_time?: string;
+                    end_time?: string;
+                    break_minutes?: number;
+                    color?: string;
+                    created_at?: string;
+                    updated_at?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "shift_templates_organization_id_fkey";
+                        columns: ["organization_id"];
+                        referencedRelation: "organizations";
+                        referencedColumns: ["id"];
+                    }
+                ];
+            };
             verification_codes: {
                 Row: {
                     id: string;
                     email: string;
                     code: string;
-                    type: "register" | "reset_password";
                     expires_at: string;
                     created_at: string;
                 };
@@ -281,7 +323,6 @@ export interface Database {
                     id?: string;
                     email: string;
                     code: string;
-                    type: "register" | "reset_password";
                     expires_at: string;
                     created_at?: string;
                 };
@@ -289,7 +330,6 @@ export interface Database {
                     id?: string;
                     email?: string;
                     code?: string;
-                    type?: "register" | "reset_password";
                     expires_at?: string;
                     created_at?: string;
                 };
@@ -304,7 +344,6 @@ export interface Database {
         };
         Enums: {
             employment_type: "full" | "half" | "custom";
-            verification_type: "register" | "reset_password";
         };
         CompositeTypes: {
             [_ in never]: never;
@@ -327,3 +366,4 @@ export type OrganizationMember = Tables<"organization_members">;
 export type Employee = Tables<"employees">;
 export type Schedule = Tables<"schedules">;
 export type Shift = Tables<"shifts">;
+export type ShiftTemplate = Tables<"shift_templates">;

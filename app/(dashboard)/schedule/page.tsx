@@ -95,6 +95,13 @@ export default async function SchedulePage({
         .eq("is_active", true)
         .order("last_name", { ascending: true });
 
+    // Pobierz szablony zmian
+    const { data: shiftTemplates } = await supabase
+        .from("shift_templates")
+        .select("*")
+        .eq("organization_id", organizationId)
+        .order("name");
+
     // Pobierz lub utwórz grafik dla danego miesiąca
     let { data: schedule } = await supabase
         .from("schedules")
@@ -158,6 +165,7 @@ export default async function SchedulePage({
                 employees={employees || []}
                 shifts={shifts || []}
                 scheduleId={schedule?.id || ""}
+                shiftTemplates={shiftTemplates || []}
             />
         </div>
     );
