@@ -577,41 +577,47 @@ export function ScheduleCalendar({
 
     return (
         <>
-            {/* Pasek z przyciskiem zapisu - fixed w prawym górnym rogu */}
-            {hasUnsavedChanges && (
-                <div className="fixed top-4 right-4 z-50 bg-amber-50 dark:bg-amber-950/95 border border-amber-200 dark:border-amber-800 p-3 rounded-xl shadow-lg flex items-center gap-3">
-                    <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-                        <span className="text-sm font-medium text-amber-800 dark:text-amber-200">
-                            {pendingChangesCount} zmian
-                        </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={handleDiscardChanges}
-                            disabled={isSaving}
-                            className="h-8 px-2"
-                        >
-                            <Undo2 className="h-4 w-4" />
-                        </Button>
-                        <Button
-                            size="sm"
-                            onClick={handleSaveAllChanges}
-                            disabled={isSaving}
-                            className="bg-amber-600 hover:bg-amber-700 h-8"
-                        >
-                            {isSaving ? (
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            ) : (
-                                <Save className="mr-2 h-4 w-4" />
-                            )}
-                            Zapisz
-                        </Button>
-                    </div>
+            {/* Pasek z przyciskiem zapisu - fixed w prawym górnym rogu z animacją */}
+            <div
+                className={cn(
+                    "fixed top-4 right-4 z-50 bg-amber-50 dark:bg-amber-950/95 border border-amber-200 dark:border-amber-800 p-3 rounded-xl shadow-lg flex items-center gap-3",
+                    "transition-all duration-300 ease-out",
+                    hasUnsavedChanges
+                        ? "opacity-100 translate-y-0 scale-100"
+                        : "opacity-0 -translate-y-4 scale-95 pointer-events-none"
+                )}
+            >
+                <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                    <span className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                        {pendingChangesCount} zmian
+                    </span>
                 </div>
-            )}
+                <div className="flex items-center gap-2">
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleDiscardChanges}
+                        disabled={isSaving}
+                        className="h-8 px-2"
+                    >
+                        <Undo2 className="h-4 w-4" />
+                    </Button>
+                    <Button
+                        size="sm"
+                        onClick={handleSaveAllChanges}
+                        disabled={isSaving}
+                        className="bg-amber-600 hover:bg-amber-700 h-8"
+                    >
+                        {isSaving ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                            <Save className="mr-2 h-4 w-4" />
+                        )}
+                        Zapisz
+                    </Button>
+                </div>
+            </div>
 
             <Card className="overflow-hidden">
                 <CardHeader className="p-3 sm:p-6">
