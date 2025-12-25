@@ -55,10 +55,10 @@ export default async function EmployeesPage({
         return (
             <div className="space-y-6">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+                    <h1 className="text-2xl font-bold text-slate-900">
                         Pracownicy
                     </h1>
-                    <p className="text-slate-600 dark:text-slate-400">
+                    <p className="text-slate-600">
                         Utwórz organizację, aby zarządzać pracownikami
                     </p>
                 </div>
@@ -85,10 +85,10 @@ export default async function EmployeesPage({
         <div className="space-y-4 sm:space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
+                    <h1 className="text-xl sm:text-2xl font-bold text-slate-900">
                         Pracownicy
                     </h1>
-                    <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400">
+                    <p className="text-sm sm:text-base text-slate-600">
                         Zarządzaj pracownikami w organizacji {currentOrg.name}
                     </p>
                 </div>

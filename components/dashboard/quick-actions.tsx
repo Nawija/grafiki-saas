@@ -75,7 +75,7 @@ export function QuickActions({ hasOrganization }: QuickActionsProps) {
                         <Link
                             key={action.title}
                             href={action.href}
-                            className="flex items-start gap-3 sm:gap-4 rounded-lg border p-3 sm:p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                            className="flex items-start gap-3 sm:gap-4 rounded-lg border p-3 sm:p-4 hover:bg-slate-50 transition-colors"
                         >
                             <div className="rounded-lg bg-primary/10 p-1.5 sm:p-2">
                                 <action.icon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />

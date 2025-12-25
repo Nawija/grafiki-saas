@@ -186,7 +186,7 @@ export function LocalShiftEditor({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[450px]">
+            <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                     <DialogTitle>
                         {existingShift ? "Edytuj zmianę" : "Dodaj zmianę"}
@@ -218,7 +218,7 @@ export function LocalShiftEditor({
                                     >
                                         <div className="flex items-center gap-3">
                                             <div
-                                                className="w-4 h-4 rounded-full flex-shrink-0"
+                                                className="w-4 h-4 rounded-full shrink-0"
                                                 style={{
                                                     backgroundColor:
                                                         template.color,

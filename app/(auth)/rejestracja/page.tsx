@@ -22,9 +22,7 @@ export default function RegisterPage() {
             <CardContent>
                 <RegisterForm />
                 <div className="mt-6 text-center text-sm">
-                    <span className="text-slate-600 dark:text-slate-400">
-                        Masz już konto?{" "}
-                    </span>
+                    <span className="text-slate-600">Masz już konto? </span>
                     <Link
                         href="/logowanie"
                         className="text-primary hover:underline font-medium"

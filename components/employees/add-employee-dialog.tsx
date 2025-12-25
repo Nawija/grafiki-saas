@@ -93,7 +93,7 @@ export function AddEmployeeDialog({
                     Dodaj pracownika
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px]">
+            <DialogContent className="sm:max-w-lg">
                 <DialogHeader>
                     <DialogTitle>Dodaj pracownika</DialogTitle>
                     <DialogDescription>

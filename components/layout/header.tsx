@@ -44,7 +44,7 @@ export function Header({ user, organizations = [] }: HeaderProps) {
 
     return (
         <>
-            <header className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 sm:gap-x-6 sm:px-6">
+            <header className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-slate-200 bg-white px-4 sm:gap-x-6 sm:px-6">
                 {/* Mobile menu button */}
                 <Button
                     variant="ghost"
@@ -59,7 +59,7 @@ export function Header({ user, organizations = [] }: HeaderProps) {
                 {/* Mobile logo */}
                 <div className="flex lg:hidden items-center gap-2">
                     <span className="text-xl">🗓️</span>
-                    <span className="font-bold text-slate-900 dark:text-white">
+                    <span className="font-bold text-slate-900">
                         Grafiki
                     </span>
                 </div>
@@ -95,7 +95,7 @@ export function Header({ user, organizations = [] }: HeaderProps) {
                                             </p>
                                         )}
                                         {user?.email && (
-                                            <p className="w-[200px] truncate text-sm text-muted-foreground">
+                                            <p className="w-50 truncate text-sm text-muted-foreground">
                                                 {user.email}
                                             </p>
                                         )}
@@ -123,7 +123,7 @@ export function Header({ user, organizations = [] }: HeaderProps) {
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem
                                     onClick={handleLogout}
-                                    className="cursor-pointer text-red-600 dark:text-red-400"
+                                    className="cursor-pointer text-red-600"
                                 >
                                     <LogOut className="mr-2 h-4 w-4" />
                                     Wyloguj się

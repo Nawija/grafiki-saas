@@ -60,10 +60,10 @@ export default async function SchedulePage({
         return (
             <div className="space-y-6">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+                    <h1 className="text-2xl font-bold text-slate-900">
                         Grafik
                     </h1>
-                    <p className="text-slate-600 dark:text-slate-400">
+                    <p className="text-slate-600">
                         Utwórz organizację, aby zarządzać grafikami
                     </p>
                 </div>
@@ -169,10 +169,10 @@ export default async function SchedulePage({
             {/* Header - responsywny */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
+                    <h1 className="text-xl sm:text-2xl font-bold text-slate-900">
                         Grafik pracy
                     </h1>
-                    <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400">
+                    <p className="text-sm sm:text-base text-slate-600">
                         {currentOrg.name}
                     </p>
                 </div>

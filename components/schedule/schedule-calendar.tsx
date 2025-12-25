@@ -430,11 +430,11 @@ export function ScheduleCalendar({
                     </div>
                 </CardHeader>
                 <CardContent className="p-0 overflow-x-auto -mx-px">
-                    <div className="min-w-[600px] sm:min-w-[800px]">
+                    <div className="min-w-150 sm:min-w-200">
                         <table className="w-full border-collapse">
                             <thead>
-                                <tr className="bg-slate-50 dark:bg-slate-800">
-                                    <th className="border p-1 sm:p-2 text-left sticky left-0 bg-slate-50 dark:bg-slate-800 z-10 min-w-[120px] sm:min-w-[180px]">
+                                <tr className="bg-slate-50">
+                                    <th className="border p-1 sm:p-2 text-left sticky left-0 bg-slate-50 z-10 min-w-30 sm:min-w-45">
                                         <span className="text-xs sm:text-sm">
                                             Pracownik
                                         </span>
@@ -457,16 +457,16 @@ export function ScheduleCalendar({
                                                 className={cn(
                                                     "border p-0.5 sm:p-1 text-center min-w-11.25 sm:min-w-20",
                                                     dayOfWeek === 6 &&
-                                                        "bg-slate-200 dark:bg-slate-600",
+                                                        "bg-slate-200",
                                                     isSunday &&
                                                         !isTradingSun &&
-                                                        "bg-red-100 dark:bg-red-900/70",
+                                                        "bg-red-100",
                                                     isSunday &&
                                                         isTradingSun &&
-                                                        "bg-green-100 dark:bg-green-900/70",
+                                                        "bg-green-100",
                                                     holiday &&
                                                         !isSunday &&
-                                                        "bg-red-100 dark:bg-red-900"
+                                                        "bg-red-100"
                                                 )}
                                             >
                                                 <div className="text-xs text-muted-foreground">
@@ -478,7 +478,7 @@ export function ScheduleCalendar({
 
                                                 {holiday && !isSunday && (
                                                     <div
-                                                        className="text-[8px] sm:text-[10px] text-red-600 dark:text-red-400 truncate hidden sm:block"
+                                                        className="text-[8px] sm:text-[10px] text-red-600 truncate hidden sm:block"
                                                         title={
                                                             holiday.localName
                                                         }
@@ -522,9 +522,9 @@ export function ScheduleCalendar({
                                 {employeeHours.map((employee) => (
                                     <tr
                                         key={employee.id}
-                                        className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50"
+                                        className="hover:bg-slate-50/50"
                                     >
-                                        <td className="border p-1 sm:p-2 sticky left-0 bg-white dark:bg-slate-900 z-10">
+                                        <td className="border p-1 sm:p-2 sticky left-0 bg-white z-10">
                                             <div className="flex items-center gap-1.5 sm:gap-2">
                                                 <div className="min-w-0">
                                                     <div className="font-medium text-xs sm:text-sm truncate">
@@ -596,37 +596,37 @@ export function ScheduleCalendar({
                                                         !shift &&
                                                             prefStatus ===
                                                                 "unavailable" &&
-                                                            "bg-red-100 dark:bg-red-900/40",
+                                                            "bg-red-100",
                                                         !shift &&
                                                             prefStatus ===
                                                                 "preferred" &&
-                                                            "bg-green-100 dark:bg-green-900/40",
+                                                            "bg-green-100",
                                                         // Standardowe kolorowanie dni (niższy priorytet)
                                                         !shift &&
                                                             prefStatus ===
                                                                 "neutral" &&
                                                             isSaturday &&
-                                                            "bg-slate-100 dark:bg-slate-700",
+                                                            "bg-slate-100",
                                                         !shift &&
                                                             prefStatus ===
                                                                 "neutral" &&
                                                             isSunday &&
                                                             !isTradingSun &&
-                                                            "bg-red-50 dark:bg-red-900/30",
+                                                            "bg-red-50",
                                                         !shift &&
                                                             prefStatus ===
                                                                 "neutral" &&
                                                             isSunday &&
                                                             isTradingSun &&
-                                                            "bg-green-50 dark:bg-green-900/30",
+                                                            "bg-green-50",
                                                         !shift &&
                                                             prefStatus ===
                                                                 "neutral" &&
                                                             holiday &&
                                                             !isSunday &&
-                                                            "bg-red-50/50 dark:bg-red-950/50",
+                                                            "bg-red-50/50",
                                                         !shift &&
-                                                            "cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700",
+                                                            "cursor-pointer hover:bg-slate-100",
                                                         isDragOver &&
                                                             "ring-2 ring-primary ring-inset",
                                                         isDragging &&
@@ -713,7 +713,7 @@ export function ScheduleCalendar({
                                                                             )
                                                                         }
                                                                         className={cn(
-                                                                            "group relative cursor-grab active:cursor-grabbing h-full min-h-[36px] sm:min-h-[42px]",
+                                                                            "group relative cursor-grab active:cursor-grabbing h-full min-h-9 sm:min-h-11",
                                                                             "flex flex-col items-start justify-between p-1 sm:p-1.5 transition-all hover:scale-[1.03] hover:shadow-md rounded-md",
                                                                             isDragging &&
                                                                                 "ring-2 ring-white shadow-lg scale-105"
@@ -771,7 +771,7 @@ export function ScheduleCalendar({
                                                             );
                                                         })()
                                                     ) : (
-                                                        <div className="h-full min-h-[40px] sm:min-h-[48px] flex flex-col items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors rounded m-0.5 sm:m-1 relative">
+                                                        <div className="h-full min-h-10 sm:min-h-12 flex flex-col items-center justify-center hover:bg-slate-50 transition-colors rounded m-0.5 sm:m-1 relative">
                                                             {/* Wskaźnik preferencji */}
                                                             {prefStatus ===
                                                                 "preferred" && (
@@ -787,7 +787,7 @@ export function ScheduleCalendar({
                                                                     title="Niedostępny"
                                                                 />
                                                             )}
-                                                            <span className="text-slate-300 dark:text-slate-600 text-lg sm:text-xl font-light">
+                                                            <span className="text-slate-300 text-lg sm:text-xl font-light">
                                                                 +
                                                             </span>
                                                         </div>
@@ -831,8 +831,8 @@ export function ScheduleCalendar({
                             </tbody>
                             {/* Footer z podsumowaniem dziennym */}
                             <tfoot>
-                                <tr className="bg-slate-100 dark:bg-slate-800 font-medium">
-                                    <td className="border p-1 sm:p-2 sticky left-0 bg-slate-100 dark:bg-slate-800 z-10">
+                                <tr className="bg-slate-100 font-medium">
+                                    <td className="border p-1 sm:p-2 sticky left-0 bg-slate-100 z-10">
                                         <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm">
                                             <Users className="h-3 w-3 sm:h-4 sm:w-4" />
                                             <span className="hidden sm:inline">
@@ -846,12 +846,12 @@ export function ScheduleCalendar({
                                             className={cn(
                                                 "border p-0.5 sm:p-1 text-center ",
                                                 day.count === 0 &&
-                                                    "bg-gray-50 dark:bg-gray-950/30",
+                                                    "bg-gray-50",
                                                 day.count > 0 &&
                                                     day.count < 3 &&
-                                                    "bg-orange-50 dark:bg-orange-950/30",
+                                                    "bg-orange-50",
                                                 day.count >= 3 &&
-                                                    "bg-green-50 dark:bg-green-950/30"
+                                                    "bg-green-50"
                                             )}
                                         >
                                             {day.count === 0 ? (
@@ -878,7 +878,7 @@ export function ScheduleCalendar({
                                                             <span className="text-[10px] sm:text-xs font-medium">
                                                                 {data.count}
                                                             </span>
-                                                            <span className="text-[8px] text-muted-foreground hidden sm:inline truncate max-w-[40px]">
+                                                            <span className="text-[8px] text-muted-foreground hidden sm:inline truncate max-w-10">
                                                                 {data.name}
                                                             </span>
                                                         </div>
@@ -929,7 +929,7 @@ export function ScheduleCalendar({
             {/* Loading overlay for drag operations */}
             {isMoving && (
                 <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50">
-                    <div className="bg-white dark:bg-slate-800 rounded-lg p-4 shadow-xl flex items-center gap-3">
+                    <div className="bg-white rounded-lg p-4 shadow-xl flex items-center gap-3">
                         <Loader2 className="h-5 w-5 animate-spin" />
                         <span>Przenoszenie zmiany...</span>
                     </div>

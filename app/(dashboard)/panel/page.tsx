@@ -128,9 +128,9 @@ export default async function DashboardPage({
     return (
         <div className="space-y-6 sm:space-y-8">
             {/* Hero Header */}
-            <Card className="relative overflow-hidden border-0 bg-linear-to-r from-blue-100 to-pink-200 dark:from-slate-900 dark:to-slate-800">
-                <div className="absolute -top-24 -right-24 w-64 h-64 bg-slate-200/50 dark:bg-slate-700/30 rounded-full blur-3xl" />
-                <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-gray-200/50 dark:bg-gray-700/30 rounded-full blur-3xl" />
+            <Card className="relative overflow-hidden border-0 bg-linear-to-r from-blue-100 to-pink-200">
+                <div className="absolute -top-24 -right-24 w-64 h-64 bg-slate-200/50 rounded-full blur-3xl" />
+                <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-gray-200/50 rounded-full blur-3xl" />
 
                 <CardContent className="relative p-6 sm:p-8">
                     <div className="flex items-center gap-2 text-muted-foreground text-sm mb-2">
@@ -169,11 +169,11 @@ export default async function DashboardPage({
             <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
                 {/* Pracownicy */}
                 <Link href="/pracownicy" className="group">
-                    <Card className="h-full transition-all duration-200 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-600 group-hover:-translate-y-0.5">
+                    <Card className="h-full transition-all duration-200 hover:shadow-md hover:border-slate-300 group-hover:-translate-y-0.5">
                         <CardContent className="p-4 sm:p-6">
                             <div className="flex items-center justify-between mb-3">
-                                <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800">
-                                    <Users className="h-5 w-5 text-slate-600 dark:text-slate-400" />
+                                <div className="p-2 rounded-lg bg-slate-100">
+                                    <Users className="h-5 w-5 text-slate-600" />
                                 </div>
                                 <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                             </div>
@@ -189,11 +189,11 @@ export default async function DashboardPage({
 
                 {/* Zmiany w tym miesiącu */}
                 <Link href="/grafik" className="group">
-                    <Card className="h-full transition-all duration-200 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-600 group-hover:-translate-y-0.5">
+                    <Card className="h-full transition-all duration-200 hover:shadow-md hover:border-slate-300 group-hover:-translate-y-0.5">
                         <CardContent className="p-4 sm:p-6">
                             <div className="flex items-center justify-between mb-3">
-                                <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800">
-                                    <BarChart3 className="h-5 w-5 text-slate-600 dark:text-slate-400" />
+                                <div className="p-2 rounded-lg bg-slate-100">
+                                    <BarChart3 className="h-5 w-5 text-slate-600" />
                                 </div>
                                 <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                             </div>
@@ -211,8 +211,8 @@ export default async function DashboardPage({
                 <Card className="h-full">
                     <CardContent className="p-4 sm:p-6">
                         <div className="flex items-center justify-between mb-3">
-                            <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800">
-                                <Clock className="h-5 w-5 text-slate-600 dark:text-slate-400" />
+                            <div className="p-2 rounded-lg bg-slate-100">
+                                <Clock className="h-5 w-5 text-slate-600" />
                             </div>
                         </div>
                         <div className="text-2xl sm:text-3xl font-bold mb-1">
@@ -226,11 +226,11 @@ export default async function DashboardPage({
 
                 {/* Niedziele handlowe */}
                 <Link href="/ustawienia?tab=org-settings" className="group">
-                    <Card className="h-full transition-all duration-200 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-600 group-hover:-translate-y-0.5">
+                    <Card className="h-full transition-all duration-200 hover:shadow-md hover:border-slate-300 group-hover:-translate-y-0.5">
                         <CardContent className="p-4 sm:p-6">
                             <div className="flex items-center justify-between mb-3">
-                                <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800">
-                                    <ShoppingBag className="h-5 w-5 text-slate-600 dark:text-slate-400" />
+                                <div className="p-2 rounded-lg bg-slate-100">
+                                    <ShoppingBag className="h-5 w-5 text-slate-600" />
                                 </div>
                                 <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                             </div>

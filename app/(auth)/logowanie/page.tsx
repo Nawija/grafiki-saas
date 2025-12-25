@@ -22,9 +22,7 @@ export default function LoginPage() {
             <CardContent>
                 <LoginForm />
                 <div className="mt-6 text-center text-sm">
-                    <span className="text-slate-600 dark:text-slate-400">
-                        Nie masz konta?{" "}
-                    </span>
+                    <span className="text-slate-600">Nie masz konta? </span>
                     <Link
                         href="/rejestracja"
                         className="text-primary hover:underline font-medium"

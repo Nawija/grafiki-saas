@@ -35,7 +35,7 @@ const features = [
 
 export default function Home() {
     return (
-        <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
+        <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100">
             {/* Header */}
             <header className="container mx-auto px-4 py-6">
                 <nav className="flex items-center justify-between">
@@ -57,11 +57,11 @@ export default function Home() {
             {/* Hero */}
             <main className="container mx-auto px-4 py-20">
                 <div className="text-center max-w-3xl mx-auto">
-                    <h1 className="text-4xl md:text-6xl font-bold text-slate-900 dark:text-white mb-6">
+                    <h1 className="text-4xl md:text-6xl font-bold text-slate-900 mb-6">
                         Zarządzaj grafikami pracy{" "}
                         <span className="text-primary">bez stresu</span>
                     </h1>
-                    <p className="text-xl text-slate-600 dark:text-slate-400 mb-8">
+                    <p className="text-xl text-slate-600 mb-8">
                         Prosty i intuicyjny system do tworzenia harmonogramów
                         pracy. Automatyczne obliczanie godzin, uwzględnianie
                         świąt i dni wolnych.
@@ -120,7 +120,7 @@ export default function Home() {
 
             {/* Footer */}
             <footer className="container mx-auto px-4 py-8 mt-20 border-t">
-                <div className="text-center text-sm text-slate-600 dark:text-slate-400">
+                <div className="text-center text-sm text-slate-600">
                     <p>
                         © {new Date().getFullYear()} Grafiki - System
                         harmonogramów pracy

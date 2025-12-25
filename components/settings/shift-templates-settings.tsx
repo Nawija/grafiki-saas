@@ -292,7 +292,7 @@ export function ShiftTemplatesSettings({
                                 <TableHead>Godziny</TableHead>
                                 <TableHead>Przerwa</TableHead>
                                 <TableHead>Czas pracy</TableHead>
-                                <TableHead className="w-[50px]"></TableHead>
+                                <TableHead className="w-12"></TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>

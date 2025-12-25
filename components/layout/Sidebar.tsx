@@ -44,7 +44,7 @@ export function Sidebar({ organizations }: SidebarProps) {
 
     return (
         <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
-            <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 pb-4">
+            <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-slate-200 bg-white px-6 pb-4">
                 {/* Logo */}
                 <div className="flex h-16 shrink-0 items-center">
                     <Link
@@ -52,7 +52,7 @@ export function Sidebar({ organizations }: SidebarProps) {
                         className="flex items-center gap-2"
                     >
                         <span className="text-2xl">🗓️</span>
-                        <span className="text-xl font-bold text-slate-900 dark:text-white">
+                        <span className="text-xl font-bold text-slate-900">
                             Grafiki
                         </span>
                     </Link>
@@ -77,8 +77,8 @@ export function Sidebar({ organizations }: SidebarProps) {
                                                 className={cn(
                                                     "group flex gap-x-3 rounded-md p-2 text-sm font-medium leading-6 transition-colors",
                                                     isActive
-                                                        ? "bg-slate-100 dark:bg-slate-800 text-primary"
-                                                        : "text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                                                        ? "bg-slate-100 text-primary"
+                                                        : "text-slate-700 hover:bg-slate-50"
                                                 )}
                                             >
                                                 <item.icon
@@ -113,10 +113,10 @@ export function Sidebar({ organizations }: SidebarProps) {
                                             <Link
                                                 href={`${pathname}?org=${org.slug}`}
                                                 className={cn(
-                                                    "group flex gap-x-3 rounded-md p-2 text-sm font-medium leading-6 hover:bg-slate-50 dark:hover:bg-slate-800/50",
+                                                    "group flex gap-x-3 rounded-md p-2 text-sm font-medium leading-6 hover:bg-slate-50",
                                                     isCurrentOrg
-                                                        ? "text-primary bg-slate-100 dark:bg-slate-800"
-                                                        : "text-slate-700 dark:text-slate-300"
+                                                        ? "text-primary bg-slate-100"
+                                                        : "text-slate-700"
                                                 )}
                                             >
                                                 <Building2
@@ -142,7 +142,7 @@ export function Sidebar({ organizations }: SidebarProps) {
                                 <li>
                                     <Link
                                         href="/ustawienia?tab=organizations"
-                                        className="group flex gap-x-3 rounded-md p-2 text-sm font-medium leading-6 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+                                        className="group flex gap-x-3 rounded-md p-2 text-sm font-medium leading-6 text-slate-500 hover:text-slate-700"
                                     >
                                         <Plus className="h-5 w-5 shrink-0" />
                                         Dodaj organizację

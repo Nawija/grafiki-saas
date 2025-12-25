@@ -185,8 +185,8 @@ export function EmployeesList({
                             <TableHead className="hidden md:table-cell">
                                 Kontakt
                             </TableHead>
-                            <TableHead>Preferencje</TableHead>
-                            <TableHead className="w-[50px]"></TableHead>
+                            <TableHead>Ustawienia</TableHead>
+                            <TableHead className="w-12"></TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -241,7 +241,7 @@ export function EmployeesList({
                                         }
                                     >
                                         <Settings2 className="mr-2 h-4 w-4" />
-                                        Ustawienia
+                                        Preferencje
                                     </Button>
                                 </TableCell>
                                 <TableCell>

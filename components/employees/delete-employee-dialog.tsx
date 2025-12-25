@@ -52,7 +52,7 @@ export function DeleteEmployeeDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[400px]">
+            <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                     <DialogTitle>Usuń pracownika</DialogTitle>
                     <DialogDescription>

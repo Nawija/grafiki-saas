@@ -59,7 +59,7 @@ export function MobileSidebar({
             <SheetContent side="left" className="w-72 p-0">
                 <div className="flex h-full flex-col">
                     {/* Header */}
-                    <SheetHeader className="border-b border-slate-200 dark:border-slate-800 p-4">
+                    <SheetHeader className="border-b border-slate-200 p-4">
                         <SheetTitle className="flex items-center gap-2">
                             <span className="text-2xl">🗓️</span>
                             <span className="text-xl font-bold">Grafiki</span>
@@ -89,8 +89,8 @@ export function MobileSidebar({
                                                 className={cn(
                                                     "group flex gap-x-3 rounded-md p-3 text-sm font-medium leading-6 transition-colors",
                                                     isActive
-                                                        ? "bg-slate-100 dark:bg-slate-800 text-primary"
-                                                        : "text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                                                        ? "bg-slate-100 text-primary"
+                                                        : "text-slate-700 hover:bg-slate-50"
                                                 )}
                                             >
                                                 <item.icon
@@ -128,10 +128,10 @@ export function MobileSidebar({
                                                     onOpenChange(false)
                                                 }
                                                 className={cn(
-                                                    "group flex gap-x-3 rounded-md p-3 text-sm font-medium leading-6 hover:bg-slate-50 dark:hover:bg-slate-800/50",
+                                                    "group flex gap-x-3 rounded-md p-3 text-sm font-medium leading-6 hover:bg-slate-50",
                                                     isCurrentOrg
-                                                        ? "text-primary bg-slate-100 dark:bg-slate-800"
-                                                        : "text-slate-700 dark:text-slate-300"
+                                                        ? "text-primary bg-slate-100"
+                                                        : "text-slate-700"
                                                 )}
                                             >
                                                 <Building2
@@ -153,7 +153,7 @@ export function MobileSidebar({
                                     <Link
                                         href="/ustawienia?tab=organizations"
                                         onClick={() => onOpenChange(false)}
-                                        className="group flex gap-x-3 rounded-md p-3 text-sm font-medium leading-6 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+                                        className="group flex gap-x-3 rounded-md p-3 text-sm font-medium leading-6 text-slate-500 hover:text-slate-700"
                                     >
                                         <Plus className="h-5 w-5 shrink-0" />
                                         Dodaj organizację

@@ -99,7 +99,7 @@ export function ProfileSettings({ profile }: ProfileSettingsProps) {
                                 type="email"
                                 value={profile?.email || ""}
                                 disabled
-                                className="bg-slate-50 dark:bg-slate-800"
+                                className="bg-slate-50"
                             />
                             <p className="text-xs text-muted-foreground">
                                 Email nie może być zmieniony

@@ -110,10 +110,10 @@ export default async function SettingsPage({
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+                <h1 className="text-2xl font-bold text-slate-900">
                     Ustawienia
                 </h1>
-                <p className="text-slate-600 dark:text-slate-400">
+                <p className="text-slate-600">
                     Zarządzaj kontem i organizacjami
                 </p>
             </div>

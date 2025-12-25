@@ -77,7 +77,7 @@ export function OrganizationSwitcher({
                     <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
                 </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-[240px]">
+            <DropdownMenuContent align="start" className="w-60">
                 {organizations.map((org) => (
                     <DropdownMenuItem
                         key={org.id}
