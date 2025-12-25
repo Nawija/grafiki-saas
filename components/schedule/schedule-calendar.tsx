@@ -511,7 +511,7 @@ export function ScheduleCalendar({
                                             </th>
                                         );
                                     })}
-                                    <th className="border p-1 sm:p-2 text-center min-w-15">
+                                    <th className="border p-1 sm:p-2 text-center min-w-20">
                                         <span className="text-xs sm:text-sm">
                                             Suma
                                         </span>
@@ -955,131 +955,6 @@ export function ScheduleCalendar({
                     templates={shiftTemplates}
                 />
             )}
-
-            {/* Swap Shift Dialog */}
-            <Dialog
-                open={swapDialog?.open || false}
-                onOpenChange={(open) => !open && setSwapDialog(null)}
-            >
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Zamień zmianę</DialogTitle>
-                        <DialogDescription>
-                            {swapDialog?.shift && (
-                                <>
-                                    Zamień zmianę{" "}
-                                    {swapDialog.shift.start_time.substring(
-                                        0,
-                                        5
-                                    )}
-                                    -{swapDialog.shift.end_time.substring(0, 5)}{" "}
-                                    z dnia{" "}
-                                    {format(
-                                        new Date(swapDialog.shift.date),
-                                        "d MMMM",
-                                        { locale: pl }
-                                    )}{" "}
-                                    z innym pracownikiem
-                                </>
-                            )}
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-4 py-4">
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium">
-                                Wybierz pracownika
-                            </label>
-                            <Select
-                                value={swapTargetEmployee}
-                                onValueChange={setSwapTargetEmployee}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Wybierz pracownika..." />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {employees
-                                        .filter(
-                                            (e) =>
-                                                e.id !==
-                                                swapDialog?.shift.employee_id
-                                        )
-                                        .map((emp) => {
-                                            const hasShift =
-                                                swapDialog?.shift &&
-                                                shifts.some(
-                                                    (s) =>
-                                                        s.employee_id ===
-                                                            emp.id &&
-                                                        s.date ===
-                                                            swapDialog.shift
-                                                                .date
-                                                );
-                                            return (
-                                                <SelectItem
-                                                    key={emp.id}
-                                                    value={emp.id}
-                                                >
-                                                    <div className="flex items-center gap-2">
-                                                        <span>
-                                                            {emp.first_name}{" "}
-                                                            {emp.last_name}
-                                                        </span>
-                                                        {hasShift && (
-                                                            <Badge
-                                                                variant="secondary"
-                                                                className="ml-2 text-xs"
-                                                            >
-                                                                ma zmianę
-                                                            </Badge>
-                                                        )}
-                                                    </div>
-                                                </SelectItem>
-                                            );
-                                        })}
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        {swapTargetEmployee && swapDialog?.shift && (
-                            <div className="p-3 bg-muted rounded-lg text-sm">
-                                {shifts.some(
-                                    (s) =>
-                                        s.employee_id === swapTargetEmployee &&
-                                        s.date === swapDialog.shift.date
-                                ) ? (
-                                    <p>
-                                        <ArrowLeftRight className="h-4 w-4 inline mr-2" />
-                                        Zmiany zostaną zamienione miejscami
-                                    </p>
-                                ) : (
-                                    <p>
-                                        Zmiana zostanie przeniesiona do
-                                        wybranego pracownika
-                                    </p>
-                                )}
-                            </div>
-                        )}
-
-                        <div className="flex gap-2 justify-end">
-                            <Button
-                                variant="outline"
-                                onClick={() => setSwapDialog(null)}
-                            >
-                                Anuluj
-                            </Button>
-                            <Button
-                                onClick={handleSwapShift}
-                                disabled={!swapTargetEmployee || isSwapping}
-                            >
-                                {isSwapping && (
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                )}
-                                Zamień
-                            </Button>
-                        </div>
-                    </div>
-                </DialogContent>
-            </Dialog>
         </>
     );
 }

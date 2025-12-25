@@ -26,28 +26,12 @@ import {
 } from "@/lib/utils/work-hours";
 import { createClient } from "@/lib/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-} from "@/components/ui/dialog";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { LocalShiftEditor, LocalShift } from "./local-shift-editor";
 import { toast } from "sonner";
 import {
     Users,
-    ArrowLeftRight,
     GripVertical,
     Loader2,
     Save,
@@ -124,13 +108,6 @@ export function ScheduleCalendar({
         employeeId: string;
         date: string;
     } | null>(null);
-
-    // Swap dialog state
-    const [swapDialog, setSwapDialog] = useState<{
-        shift: LocalShift;
-        open: boolean;
-    } | null>(null);
-    const [swapTargetEmployee, setSwapTargetEmployee] = useState<string>("");
 
     // Saving state
     const [isSaving, setIsSaving] = useState(false);
@@ -395,43 +372,6 @@ export function ScheduleCalendar({
         setDragOverCell(null);
     }, []);
 
-    // Swap shift lokalnie
-    const handleSwapShift = useCallback(() => {
-        if (!swapDialog?.shift || !swapTargetEmployee) return;
-
-        const sourceShift = swapDialog.shift;
-
-        setLocalShifts((prev) => {
-            const targetShift = prev.find(
-                (s) =>
-                    s.employee_id === swapTargetEmployee &&
-                    s.date === sourceShift.date &&
-                    s._status !== "deleted"
-            );
-
-            return prev.map((s) => {
-                if (s.id === sourceShift.id) {
-                    return {
-                        ...s,
-                        employee_id: swapTargetEmployee,
-                        _status: s._status === "new" ? "new" : "modified",
-                    } as LocalShift;
-                }
-                if (targetShift && s.id === targetShift.id) {
-                    return {
-                        ...s,
-                        employee_id: sourceShift.employee_id,
-                        _status: s._status === "new" ? "new" : "modified",
-                    } as LocalShift;
-                }
-                return s;
-            });
-        });
-
-        setSwapDialog(null);
-        setSwapTargetEmployee("");
-    }, [swapDialog, swapTargetEmployee]);
-
     // ZAPISZ WSZYSTKIE ZMIANY DO BAZY
     const handleSaveAllChanges = async () => {
         setIsSaving(true);
@@ -632,11 +572,11 @@ export function ScheduleCalendar({
                     </div>
                 </CardHeader>
                 <CardContent className="p-0 overflow-x-auto -mx-px">
-                    <div className="min-w-[600px] sm:min-w-[800px]">
-                        <table className="w-full border-collapse">
+                    <div className="min-w-[800px] sm:min-w-[1200px]">
+                        <table className="w-full border-collapse table-fixed">
                             <thead>
                                 <tr className="bg-slate-50 dark:bg-slate-800">
-                                    <th className="border p-1 sm:p-2 text-left sticky left-0 bg-slate-50 dark:bg-slate-800 z-10 min-w-[120px] sm:min-w-[180px]">
+                                    <th className="border p-1 sm:p-2 text-left sticky left-0 bg-slate-50 dark:bg-slate-800 z-10 w-[140px] sm:w-[180px]">
                                         <span className="text-xs sm:text-sm">
                                             Pracownik
                                         </span>
@@ -647,7 +587,6 @@ export function ScheduleCalendar({
                                             day,
                                             holidays
                                         );
-                                        const isWeekendDay = isWeekend(day);
                                         const isSunday = dayOfWeek === 0;
                                         const isTradingSun =
                                             isTradingSunday(day);
@@ -658,7 +597,7 @@ export function ScheduleCalendar({
                                             <th
                                                 key={day.toISOString()}
                                                 className={cn(
-                                                    "border p-0.5 sm:p-1 text-center min-w-11.25 sm:min-w-20",
+                                                    "border p-0.5 sm:p-1 text-center w-[55px] sm:w-[75px]",
                                                     dayOfWeek === 6 &&
                                                         "bg-slate-200 dark:bg-slate-600",
                                                     isSunday &&
@@ -711,7 +650,7 @@ export function ScheduleCalendar({
                                             </th>
                                         );
                                     })}
-                                    <th className="border p-1 sm:p-2 text-center min-w-15">
+                                    <th className="border p-1 sm:p-2 text-center w-[70px] sm:w-[90px]">
                                         <span className="text-xs sm:text-sm">
                                             Suma
                                         </span>
@@ -928,18 +867,19 @@ export function ScheduleCalendar({
                                                                             <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-amber-400 border-2 border-white" />
                                                                         )}
 
-                                                                        <div className="text-[10px] sm:text-xs font-bold text-white leading-tight">
-                                                                            {shift.start_time.substring(
-                                                                                0,
-                                                                                5
-                                                                            )}
-                                                                            <span className="opacity-80">
-                                                                                -
-                                                                            </span>
-                                                                            {shift.end_time.substring(
-                                                                                0,
-                                                                                5
-                                                                            )}
+                                                                        <div className="text-[10px] sm:text-xs font-bold text-white leading-tight text-center w-full">
+                                                                            <div>
+                                                                                {shift.start_time.substring(
+                                                                                    0,
+                                                                                    5
+                                                                                )}
+                                                                            </div>
+                                                                            <div className="opacity-80">
+                                                                                {shift.end_time.substring(
+                                                                                    0,
+                                                                                    5
+                                                                                )}
+                                                                            </div>
                                                                         </div>
 
                                                                         {templateName && (
@@ -949,26 +889,6 @@ export function ScheduleCalendar({
                                                                                 }
                                                                             </div>
                                                                         )}
-
-                                                                        <div className="absolute bottom-0.5 right-0.5 sm:bottom-1 sm:right-1 opacity-0 group-hover:opacity-100 transition-opacity flex gap-0.5">
-                                                                            <button
-                                                                                onClick={(
-                                                                                    e
-                                                                                ) => {
-                                                                                    e.stopPropagation();
-                                                                                    setSwapDialog(
-                                                                                        {
-                                                                                            shift,
-                                                                                            open: true,
-                                                                                        }
-                                                                                    );
-                                                                                }}
-                                                                                className="p-0.5 bg-white/30 hover:bg-white/50 rounded transition-colors"
-                                                                                title="Zamień z kimś"
-                                                                            >
-                                                                                <ArrowLeftRight className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white" />
-                                                                            </button>
-                                                                        </div>
                                                                     </div>
                                                                 </div>
                                                             );
@@ -1044,7 +964,7 @@ export function ScheduleCalendar({
                                             className="border p-0.5 sm:p-1 text-center"
                                         >
                                             {staffCountByDay[idx].count > 0 && (
-                                                <div className="flex flex-col gap-0.5 items-center">
+                                                <div className="flex flex-col gap-0.5 items-start">
                                                     {Object.entries(
                                                         staffCountByDay[idx]
                                                             .byType
@@ -1055,7 +975,7 @@ export function ScheduleCalendar({
                                                             title={data.name}
                                                         >
                                                             <div
-                                                                className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full shrink-0"
+                                                                className="w-2 h-2 rounded-full shrink-0"
                                                                 style={{
                                                                     backgroundColor:
                                                                         data.color,
@@ -1137,128 +1057,6 @@ export function ScheduleCalendar({
                     onDelete={handleLocalDelete}
                 />
             )}
-
-            {/* Swap Shift Dialog */}
-            <Dialog
-                open={swapDialog?.open || false}
-                onOpenChange={(open) => !open && setSwapDialog(null)}
-            >
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Zamień zmianę</DialogTitle>
-                        <DialogDescription>
-                            {swapDialog?.shift && (
-                                <>
-                                    Zamień zmianę{" "}
-                                    {swapDialog.shift.start_time.substring(
-                                        0,
-                                        5
-                                    )}
-                                    -{swapDialog.shift.end_time.substring(0, 5)}{" "}
-                                    z dnia{" "}
-                                    {format(
-                                        new Date(swapDialog.shift.date),
-                                        "d MMMM",
-                                        { locale: pl }
-                                    )}{" "}
-                                    z innym pracownikiem
-                                </>
-                            )}
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-4 py-4">
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium">
-                                Wybierz pracownika
-                            </label>
-                            <Select
-                                value={swapTargetEmployee}
-                                onValueChange={setSwapTargetEmployee}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Wybierz pracownika..." />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {employees
-                                        .filter(
-                                            (e) =>
-                                                e.id !==
-                                                swapDialog?.shift.employee_id
-                                        )
-                                        .map((emp) => {
-                                            const hasShift =
-                                                swapDialog?.shift &&
-                                                visibleShifts.some(
-                                                    (s) =>
-                                                        s.employee_id ===
-                                                            emp.id &&
-                                                        s.date ===
-                                                            swapDialog.shift
-                                                                .date
-                                                );
-                                            return (
-                                                <SelectItem
-                                                    key={emp.id}
-                                                    value={emp.id}
-                                                >
-                                                    <div className="flex items-center gap-2">
-                                                        <span>
-                                                            {emp.first_name}{" "}
-                                                            {emp.last_name}
-                                                        </span>
-                                                        {hasShift && (
-                                                            <Badge
-                                                                variant="secondary"
-                                                                className="ml-2 text-xs"
-                                                            >
-                                                                ma zmianę
-                                                            </Badge>
-                                                        )}
-                                                    </div>
-                                                </SelectItem>
-                                            );
-                                        })}
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        {swapTargetEmployee && swapDialog?.shift && (
-                            <div className="p-3 bg-muted rounded-lg text-sm">
-                                {visibleShifts.some(
-                                    (s) =>
-                                        s.employee_id === swapTargetEmployee &&
-                                        s.date === swapDialog.shift.date
-                                ) ? (
-                                    <p>
-                                        <ArrowLeftRight className="h-4 w-4 inline mr-2" />
-                                        Zmiany zostaną zamienione miejscami
-                                    </p>
-                                ) : (
-                                    <p>
-                                        Zmiana zostanie przeniesiona do
-                                        wybranego pracownika
-                                    </p>
-                                )}
-                            </div>
-                        )}
-
-                        <div className="flex gap-2 justify-end">
-                            <Button
-                                variant="outline"
-                                onClick={() => setSwapDialog(null)}
-                            >
-                                Anuluj
-                            </Button>
-                            <Button
-                                onClick={handleSwapShift}
-                                disabled={!swapTargetEmployee}
-                            >
-                                Zamień
-                            </Button>
-                        </div>
-                    </div>
-                </DialogContent>
-            </Dialog>
         </>
     );
 }
