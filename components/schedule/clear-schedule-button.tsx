@@ -74,21 +74,23 @@ export function ClearScheduleButton({
                         <AlertTriangle className="h-5 w-5 text-red-600" />
                         Wyczyścić grafik?
                     </AlertDialogTitle>
-                    <AlertDialogDescription className="space-y-2">
-                        <p>
-                            Czy na pewno chcesz usunąć{" "}
-                            <strong>wszystkie zmiany</strong> z grafiku na{" "}
-                            <strong>{monthName}</strong>?
-                        </p>
-                        <p className="text-red-600 font-medium">
-                            Ta operacja usunie {shiftsCount}{" "}
-                            {shiftsCount === 1
-                                ? "zmianę"
-                                : shiftsCount < 5
-                                ? "zmiany"
-                                : "zmian"}{" "}
-                            i nie może być cofnięta!
-                        </p>
+                    <AlertDialogDescription asChild>
+                        <div className="space-y-2 text-sm text-muted-foreground">
+                            <p>
+                                Czy na pewno chcesz usunąć{" "}
+                                <strong>wszystkie zmiany</strong> z grafiku na{" "}
+                                <strong>{monthName}</strong>?
+                            </p>
+                            <p className="text-red-600 font-medium">
+                                Ta operacja usunie {shiftsCount}{" "}
+                                {shiftsCount === 1
+                                    ? "zmianę"
+                                    : shiftsCount < 5
+                                    ? "zmiany"
+                                    : "zmian"}{" "}
+                                i nie może być cofnięta!
+                            </p>
+                        </div>
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
