@@ -59,7 +59,8 @@ export default async function SettingsPage({
     // Pobierz aktualną organizację z cookie
     const cookieStore = await cookies();
     const currentOrgId = cookieStore.get("current_organization")?.value;
-    const currentOrg = organizations.find((o) => o.id === currentOrgId) || organizations[0];
+    const currentOrg =
+        organizations.find((o) => o.id === currentOrgId) || organizations[0];
 
     // Pobierz szablony zmian dla aktualnej organizacji
     let shiftTemplates: Array<{
@@ -73,14 +74,14 @@ export default async function SettingsPage({
         created_at: string;
         updated_at: string;
     }> = [];
-    
+
     if (currentOrg) {
         const { data: templates } = await supabase
             .from("shift_templates")
             .select("*")
             .eq("organization_id", currentOrg.id)
             .order("name");
-        
+
         shiftTemplates = templates || [];
     }
 

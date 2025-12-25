@@ -54,17 +54,21 @@ export function ShiftTemplatesSettings({
         color: "#3b82f6",
     });
 
-    function calculateHours(start: string, end: string, breakMins: number): string {
+    function calculateHours(
+        start: string,
+        end: string,
+        breakMins: number
+    ): string {
         const [startH, startM] = start.split(":").map(Number);
         const [endH, endM] = end.split(":").map(Number);
-        
-        let totalMinutes = (endH * 60 + endM) - (startH * 60 + startM);
+
+        let totalMinutes = endH * 60 + endM - (startH * 60 + startM);
         if (totalMinutes < 0) totalMinutes += 24 * 60; // Next day
         totalMinutes -= breakMins;
-        
+
         const hours = Math.floor(totalMinutes / 60);
         const mins = totalMinutes % 60;
-        
+
         return mins > 0 ? `${hours}h ${mins}min` : `${hours}h`;
     }
 
@@ -154,7 +158,8 @@ export function ShiftTemplatesSettings({
                             <DialogHeader>
                                 <DialogTitle>Nowy szablon zmiany</DialogTitle>
                                 <DialogDescription>
-                                    Szablon ułatwi szybkie dodawanie zmian do grafiku
+                                    Szablon ułatwi szybkie dodawanie zmian do
+                                    grafiku
                                 </DialogDescription>
                             </DialogHeader>
                             <div className="space-y-4 py-4">
@@ -164,7 +169,10 @@ export function ShiftTemplatesSettings({
                                         placeholder="np. Poranna, Popołudniowa, Nocna"
                                         value={formData.name}
                                         onChange={(e) =>
-                                            setFormData({ ...formData, name: e.target.value })
+                                            setFormData({
+                                                ...formData,
+                                                name: e.target.value,
+                                            })
                                         }
                                     />
                                 </div>
@@ -175,7 +183,10 @@ export function ShiftTemplatesSettings({
                                             type="time"
                                             value={formData.startTime}
                                             onChange={(e) =>
-                                                setFormData({ ...formData, startTime: e.target.value })
+                                                setFormData({
+                                                    ...formData,
+                                                    startTime: e.target.value,
+                                                })
                                             }
                                         />
                                     </div>
@@ -185,7 +196,10 @@ export function ShiftTemplatesSettings({
                                             type="time"
                                             value={formData.endTime}
                                             onChange={(e) =>
-                                                setFormData({ ...formData, endTime: e.target.value })
+                                                setFormData({
+                                                    ...formData,
+                                                    endTime: e.target.value,
+                                                })
                                             }
                                         />
                                     </div>
@@ -200,7 +214,9 @@ export function ShiftTemplatesSettings({
                                         onChange={(e) =>
                                             setFormData({
                                                 ...formData,
-                                                breakMinutes: parseInt(e.target.value) || 0,
+                                                breakMinutes:
+                                                    parseInt(e.target.value) ||
+                                                    0,
                                             })
                                         }
                                     />
@@ -217,8 +233,15 @@ export function ShiftTemplatesSettings({
                                                         ? "border-gray-900 scale-110"
                                                         : "border-transparent"
                                                 }`}
-                                                style={{ backgroundColor: color }}
-                                                onClick={() => setFormData({ ...formData, color })}
+                                                style={{
+                                                    backgroundColor: color,
+                                                }}
+                                                onClick={() =>
+                                                    setFormData({
+                                                        ...formData,
+                                                        color,
+                                                    })
+                                                }
                                             />
                                         ))}
                                     </div>
@@ -237,7 +260,9 @@ export function ShiftTemplatesSettings({
                                 </div>
                                 <Button
                                     onClick={handleCreate}
-                                    disabled={isCreating || !formData.name.trim()}
+                                    disabled={
+                                        isCreating || !formData.name.trim()
+                                    }
                                     className="w-full"
                                 >
                                     {isCreating && (
@@ -277,13 +302,19 @@ export function ShiftTemplatesSettings({
                                         <div className="flex items-center gap-2">
                                             <div
                                                 className="w-3 h-3 rounded-full"
-                                                style={{ backgroundColor: template.color }}
+                                                style={{
+                                                    backgroundColor:
+                                                        template.color,
+                                                }}
                                             />
-                                            <span className="font-medium">{template.name}</span>
+                                            <span className="font-medium">
+                                                {template.name}
+                                            </span>
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        {template.start_time.slice(0, 5)} - {template.end_time.slice(0, 5)}
+                                        {template.start_time.slice(0, 5)} -{" "}
+                                        {template.end_time.slice(0, 5)}
                                     </TableCell>
                                     <TableCell>
                                         <div className="flex items-center gap-1 text-muted-foreground">
@@ -302,8 +333,12 @@ export function ShiftTemplatesSettings({
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            onClick={() => handleDelete(template.id)}
-                                            disabled={deletingId === template.id}
+                                            onClick={() =>
+                                                handleDelete(template.id)
+                                            }
+                                            disabled={
+                                                deletingId === template.id
+                                            }
                                         >
                                             {deletingId === template.id ? (
                                                 <Loader2 className="h-4 w-4 animate-spin" />

@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { ScheduleCalendar } from "@/components/schedule/schedule-calendar";
 import { MonthSelector } from "@/components/schedule/month-selector";
+import { ShiftTemplatesManager } from "@/components/schedule/shift-templates-manager";
 import { fetchHolidays } from "@/lib/api/holidays";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
@@ -155,7 +156,13 @@ export default async function SchedulePage({
                         {currentOrg.name}
                     </p>
                 </div>
-                <MonthSelector year={year} month={month} />
+                <div className="flex items-center gap-3">
+                    <ShiftTemplatesManager
+                        templates={shiftTemplates || []}
+                        organizationId={organizationId}
+                    />
+                    <MonthSelector year={year} month={month} />
+                </div>
             </div>
 
             <ScheduleCalendar
