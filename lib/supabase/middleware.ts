@@ -1,7 +1,3 @@
-// ===========================================
-// SUPABASE MIDDLEWARE
-// ===========================================
-
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
@@ -33,44 +29,42 @@ export async function updateSession(request: NextRequest) {
         }
     );
 
-    // Do not run code between createServerClient and
-    // supabase.auth.getUser(). A simple mistake could make it very hard to debug
-    // issues with users being randomly logged out.
-
     const {
         data: { user },
     } = await supabase.auth.getUser();
 
-    // Protect dashboard routes
-    if (!user && request.nextUrl.pathname.startsWith("/dashboard")) {
+    // Ścieżki publiczne - nie wymagają logowania
+    const publicPaths = [
+        "/logowanie",
+        "/rejestracja",
+        "/weryfikacja",
+        "/reset-hasla",
+        "/api/auth",
+    ];
+    const isPublicPath = publicPaths.some((path) =>
+        request.nextUrl.pathname.startsWith(path)
+    );
+
+    // Strona główna - przekieruj zalogowanych do dashboardu
+    if (request.nextUrl.pathname === "/") {
+        if (user) {
+            return NextResponse.redirect(new URL("/dashboard", request.url));
+        }
+        return NextResponse.redirect(new URL("/logowanie", request.url));
+    }
+
+    // Jeśli użytkownik nie jest zalogowany i próbuje wejść na chronioną stronę
+    if (!user && !isPublicPath) {
         const url = request.nextUrl.clone();
-        url.pathname = "/login";
+        url.pathname = "/logowanie";
         return NextResponse.redirect(url);
     }
 
-    // Check if user needs onboarding (has no organization)
-    if (user && request.nextUrl.pathname.startsWith("/dashboard")) {
-        // Check if user has an organization
-        const { data: membership } = await supabase
-            .from("organization_members")
-            .select("organization_id")
-            .eq("user_id", user.id)
-            .limit(1)
-            .single();
-
-        // If no organization, redirect to onboarding
-        if (!membership) {
-            const url = request.nextUrl.clone();
-            url.pathname = "/onboarding";
-            return NextResponse.redirect(url);
-        }
-    }
-
-    // Redirect logged in users from auth pages to dashboard
+    // Jeśli użytkownik jest zalogowany i próbuje wejść na stronę auth
     if (
         user &&
-        (request.nextUrl.pathname === "/login" ||
-            request.nextUrl.pathname === "/register")
+        isPublicPath &&
+        !request.nextUrl.pathname.startsWith("/api/auth")
     ) {
         const url = request.nextUrl.clone();
         url.pathname = "/dashboard";

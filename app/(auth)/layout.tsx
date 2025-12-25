@@ -1,26 +1,20 @@
-import { Logo } from "@/components/logo";
-
 export default function AuthLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
     return (
-        <div className="min-h-screen flex flex-col">
-            {/* Header */}
-            <header className="absolute top-0 left-0 right-0 z-10 p-4 sm:p-6">
-                <Logo size="md" />
-            </header>
-
-            {/* Main content */}
-            <main className="flex-1 flex items-center justify-center p-4">
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 p-4">
+            <div className="w-full max-w-md">
+                <div className="text-center mb-8">
+                    <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
+                        🗓️ Grafiki
+                    </h1>
+                    <p className="text-slate-600 dark:text-slate-400 mt-2">
+                        System harmonogramów pracy
+                    </p>
+                </div>
                 {children}
-            </main>
-
-            {/* Background decoration */}
-            <div className="fixed inset-0 -z-10 overflow-hidden">
-                <div className="absolute -top-1/2 -right-1/2 w-full h-full bg-gradient-to-bl from-primary/5 via-transparent to-transparent rounded-full" />
-                <div className="absolute -bottom-1/2 -left-1/2 w-full h-full bg-gradient-to-tr from-primary/5 via-transparent to-transparent rounded-full" />
             </div>
         </div>
     );

@@ -1,15 +1,12 @@
-// ===========================================
-// SUPABASE CLIENT - SERVER SIDE
-// ===========================================
-
 import { createServerClient } from "@supabase/ssr";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
+import type { Database } from "@/types/database";
 
 export async function createClient() {
     const cookieStore = await cookies();
 
-    return createServerClient(
+    return createServerClient<Database>(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
         {
@@ -23,9 +20,7 @@ export async function createClient() {
                             cookieStore.set(name, value, options)
                         );
                     } catch {
-                        // The `setAll` method was called from a Server Component.
-                        // This can be ignored if you have middleware refreshing
-                        // user sessions.
+                        // Ignorujemy błędy w Server Components
                     }
                 },
             },
@@ -33,9 +28,9 @@ export async function createClient() {
     );
 }
 
-// Admin client with service_role key - bypasses RLS and email verification
-export function createAdminClient() {
-    return createSupabaseClient(
+// Service client pomija RLS - używaj tylko w API routes
+export async function createServiceClient() {
+    return createSupabaseClient<Database>(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.SUPABASE_SERVICE_ROLE_KEY!,
         {

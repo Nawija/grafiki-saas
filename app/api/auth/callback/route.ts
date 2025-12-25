@@ -11,6 +11,30 @@ export async function GET(request: Request) {
         const { error } = await supabase.auth.exchangeCodeForSession(code);
 
         if (!error) {
+            // Sprawdź czy użytkownik ma profil, jeśli nie - utwórz
+            const {
+                data: { user },
+            } = await supabase.auth.getUser();
+
+            if (user) {
+                const { data: profile } = await supabase
+                    .from("profiles")
+                    .select("id")
+                    .eq("id", user.id)
+                    .single();
+
+                if (!profile) {
+                    await supabase.from("profiles").insert({
+                        id: user.id,
+                        email: user.email!,
+                        full_name:
+                            user.user_metadata.full_name ||
+                            user.user_metadata.name,
+                        avatar_url: user.user_metadata.avatar_url,
+                    });
+                }
+            }
+
             const forwardedHost = request.headers.get("x-forwarded-host");
             const isLocalEnv = process.env.NODE_ENV === "development";
 
@@ -24,6 +48,7 @@ export async function GET(request: Request) {
         }
     }
 
-    // Return the user to an error page with instructions
-    return NextResponse.redirect(`${origin}/login?error=auth_callback_error`);
+    return NextResponse.redirect(
+        `${origin}/logowanie?error=auth_callback_error`
+    );
 }

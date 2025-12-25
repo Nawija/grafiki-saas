@@ -1,40 +1,93 @@
-import { NextRequest, NextResponse } from "next/server";
-import { createVerificationCode, UserData } from "@/lib/auth";
+import { NextResponse } from "next/server";
+import { createServiceClient } from "@/lib/supabase/server";
+import { sendVerificationCode } from "@/lib/email/nodemailer";
+import { registerApiSchema } from "@/lib/validations/auth";
 
-export async function POST(request: NextRequest) {
+function generateCode(): string {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const { firstName, lastName, email, password } = body;
+        const validation = registerApiSchema.safeParse(body);
 
-        // Validation
-        if (!firstName || !lastName || !email || !password) {
+        if (!validation.success) {
             return NextResponse.json(
-                { error: "Wszystkie pola są wymagane" },
+                { error: validation.error.issues[0].message },
                 { status: 400 }
             );
         }
 
-        if (password.length < 6) {
+        const { email, password, fullName } = validation.data;
+        const supabase = await createServiceClient();
+
+        // Sprawdź czy użytkownik już istnieje
+        const { data: existingUser } = await supabase
+            .from("profiles")
+            .select("id")
+            .eq("email", email)
+            .single();
+
+        if (existingUser) {
             return NextResponse.json(
-                { error: "Hasło musi mieć minimum 6 znaków" },
+                { error: "Użytkownik z tym adresem email już istnieje" },
                 { status: 400 }
             );
         }
 
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
+        // Utwórz użytkownika w Supabase Auth (bez automatycznego potwierdzenia)
+        const { data: authData, error: authError } =
+            await supabase.auth.admin.createUser({
+                email,
+                password,
+                email_confirm: false, // Wymagaj weryfikacji
+                user_metadata: {
+                    full_name: fullName,
+                },
+            });
+
+        if (authError) {
+            console.error("Auth error:", authError);
             return NextResponse.json(
-                { error: "Nieprawidłowy format email" },
-                { status: 400 }
+                { error: "Nie udało się utworzyć konta" },
+                { status: 500 }
             );
         }
 
-        const userData: UserData = { firstName, lastName, email, password };
-        const result = await createVerificationCode(email, userData, "signup");
-
-        if (!result.success) {
-            return NextResponse.json({ error: result.error }, { status: 500 });
+        // Utwórz profil użytkownika
+        if (authData.user) {
+            await supabase.from("profiles").insert({
+                id: authData.user.id,
+                email,
+                full_name: fullName,
+            });
         }
+
+        // Wygeneruj kod weryfikacyjny
+        const code = generateCode();
+        const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minut
+
+        console.log(`[DEBUG] Verification code for ${email}: ${code}`);
+
+        // Usuń stare kody dla tego emaila
+        await supabase.from("verification_codes").delete().eq("email", email);
+
+        // Zapisz nowy kod
+        const { error: insertCodeError } = await supabase
+            .from("verification_codes")
+            .insert({
+                email,
+                code,
+                expires_at: expiresAt.toISOString(),
+            });
+
+        if (insertCodeError) {
+            console.error("Insert verification code error:", insertCodeError);
+        }
+
+        // Wyślij email z kodem
+        await sendVerificationCode(email, code);
 
         return NextResponse.json({
             success: true,
@@ -43,7 +96,7 @@ export async function POST(request: NextRequest) {
     } catch (error) {
         console.error("Register error:", error);
         return NextResponse.json(
-            { error: "Wystąpił błąd serwera" },
+            { error: "Wystąpił błąd podczas rejestracji" },
             { status: 500 }
         );
     }
