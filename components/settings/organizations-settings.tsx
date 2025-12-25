@@ -24,7 +24,18 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus, Building2, Trash2, Loader2 } from "lucide-react";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Plus, Building2, Trash2, Loader2, AlertTriangle } from "lucide-react";
 
 interface OrganizationsSettingsProps {
     organizations: OrganizationWithRole[];
@@ -228,21 +239,69 @@ export function OrganizationsSettings({
                                             </Badge>
                                         )}
                                         {org.is_owner && (
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                onClick={() =>
-                                                    handleDelete(org.id)
-                                                }
-                                                disabled={deletingId === org.id}
-                                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                                            >
-                                                {deletingId === org.id ? (
-                                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                                ) : (
-                                                    <Trash2 className="h-4 w-4" />
-                                                )}
-                                            </Button>
+                                            <AlertDialog>
+                                                <AlertDialogTrigger asChild>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        disabled={
+                                                            deletingId ===
+                                                            org.id
+                                                        }
+                                                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                                    >
+                                                        {deletingId ===
+                                                        org.id ? (
+                                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                                        ) : (
+                                                            <Trash2 className="h-4 w-4" />
+                                                        )}
+                                                    </Button>
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent>
+                                                    <AlertDialogHeader>
+                                                        <AlertDialogTitle className="flex items-center gap-2">
+                                                            <AlertTriangle className="h-5 w-5 text-red-600" />
+                                                            Usunąć organizację?
+                                                        </AlertDialogTitle>
+                                                        <AlertDialogDescription className="space-y-2">
+                                                            <p>
+                                                                Czy na pewno
+                                                                chcesz usunąć
+                                                                organizację{" "}
+                                                                <strong>
+                                                                    {org.name}
+                                                                </strong>
+                                                                ?
+                                                            </p>
+                                                            <p className="text-red-600 font-medium">
+                                                                Ta operacja
+                                                                usunie
+                                                                wszystkich
+                                                                pracowników,
+                                                                grafiki i
+                                                                zmiany. Nie może
+                                                                być cofnięta!
+                                                            </p>
+                                                        </AlertDialogDescription>
+                                                    </AlertDialogHeader>
+                                                    <AlertDialogFooter>
+                                                        <AlertDialogCancel>
+                                                            Anuluj
+                                                        </AlertDialogCancel>
+                                                        <AlertDialogAction
+                                                            onClick={() =>
+                                                                handleDelete(
+                                                                    org.id
+                                                                )
+                                                            }
+                                                            className="bg-red-600 hover:bg-red-700"
+                                                        >
+                                                            Tak, usuń
+                                                        </AlertDialogAction>
+                                                    </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                            </AlertDialog>
                                         )}
                                     </div>
                                 </div>

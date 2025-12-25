@@ -61,24 +61,30 @@ export function QuickActions({ hasOrganization }: QuickActionsProps) {
 
     return (
         <Card>
-            <CardHeader>
-                <CardTitle>Szybkie akcje</CardTitle>
-                <CardDescription>Najczęściej używane funkcje</CardDescription>
+            <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="text-base sm:text-lg">
+                    Szybkie akcje
+                </CardTitle>
+                <CardDescription className="text-xs sm:text-sm">
+                    Najczęściej używane funkcje
+                </CardDescription>
             </CardHeader>
-            <CardContent>
-                <div className="grid gap-4 sm:grid-cols-3">
+            <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
+                <div className="grid gap-3 sm:gap-4 sm:grid-cols-3">
                     {actions.map((action) => (
                         <Link
                             key={action.title}
                             href={action.href}
-                            className="flex items-start gap-4 rounded-lg border p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                            className="flex items-start gap-3 sm:gap-4 rounded-lg border p-3 sm:p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
                         >
-                            <div className="rounded-lg bg-primary/10 p-2">
-                                <action.icon className="h-5 w-5 text-primary" />
+                            <div className="rounded-lg bg-primary/10 p-1.5 sm:p-2">
+                                <action.icon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                             </div>
                             <div>
-                                <p className="font-medium">{action.title}</p>
-                                <p className="text-sm text-muted-foreground">
+                                <p className="font-medium text-sm sm:text-base">
+                                    {action.title}
+                                </p>
+                                <p className="text-xs sm:text-sm text-muted-foreground">
                                     {action.description}
                                 </p>
                             </div>

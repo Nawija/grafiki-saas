@@ -1,8 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { format } from "date-fns";
+import { pl } from "date-fns/locale";
 import { ScheduleCalendar } from "@/components/schedule/schedule-calendar";
 import { MonthSelector } from "@/components/schedule/month-selector";
 import { ShiftTemplatesManager } from "@/components/schedule/shift-templates-manager";
+import { ClearScheduleButton } from "@/components/schedule/clear-schedule-button";
 import { fetchHolidays } from "@/lib/api/holidays";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
@@ -103,6 +106,13 @@ export default async function SchedulePage({
         .eq("organization_id", organizationId)
         .order("name");
 
+    // Pobierz ustawienia organizacji (niedziele handlowe)
+    const { data: orgSettings } = await supabase
+        .from("organization_settings")
+        .select("*")
+        .eq("organization_id", organizationId)
+        .single();
+
     // Pobierz lub utwórz grafik dla danego miesiąca
     let { data: schedule } = await supabase
         .from("schedules")
@@ -145,18 +155,29 @@ export default async function SchedulePage({
         .eq("schedule_id", schedule?.id || "");
 
     return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
+        <div className="space-y-4 sm:space-y-6">
+            {/* Header - responsywny */}
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+                    <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
                         Grafik pracy
                     </h1>
-                    <p className="text-slate-600 dark:text-slate-400">
-                        Zarządzaj harmonogramem pracy w organizacji{" "}
+                    <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400">
                         {currentOrg.name}
                     </p>
                 </div>
-                <div className="flex items-center gap-3">
+
+                {/* Akcje - responsywne */}
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                    <ClearScheduleButton
+                        scheduleId={schedule?.id || ""}
+                        monthName={format(
+                            new Date(year, month - 1),
+                            "LLLL yyyy",
+                            { locale: pl }
+                        )}
+                        shiftsCount={shifts?.length || 0}
+                    />
                     <ShiftTemplatesManager
                         templates={shiftTemplates || []}
                         organizationId={organizationId}
@@ -173,6 +194,7 @@ export default async function SchedulePage({
                 shifts={shifts || []}
                 scheduleId={schedule?.id || ""}
                 shiftTemplates={shiftTemplates || []}
+                organizationSettings={orgSettings}
             />
         </div>
     );

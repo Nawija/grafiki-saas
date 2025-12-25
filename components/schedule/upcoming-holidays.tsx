@@ -20,22 +20,22 @@ export function UpcomingHolidays({ holidays }: UpcomingHolidaysProps) {
 
     return (
         <Card>
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                    <CalendarDays className="h-5 w-5" />
+            <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                    <CalendarDays className="h-4 w-4 sm:h-5 sm:w-5" />
                     Nadchodzące święta
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-xs sm:text-sm">
                     Najbliższe dni wolne od pracy w Polsce
                 </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
                 {upcoming.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-xs sm:text-sm text-muted-foreground">
                         Brak nadchodzących świąt
                     </p>
                 ) : (
-                    <ul className="space-y-3">
+                    <ul className="space-y-2 sm:space-y-3">
                         {upcoming.map((holiday) => {
                             const date = new Date(holiday.date);
                             const dayOfWeek = date.toLocaleDateString("pl-PL", {
@@ -72,17 +72,17 @@ export function UpcomingHolidays({ holidays }: UpcomingHolidaysProps) {
                             return (
                                 <li
                                     key={holiday.date}
-                                    className="flex items-start justify-between border-b last:border-0 pb-3 last:pb-0"
+                                    className="flex items-start justify-between border-b last:border-0 pb-2 sm:pb-3 last:pb-0"
                                 >
                                     <div>
-                                        <p className="font-medium">
+                                        <p className="font-medium text-sm sm:text-base">
                                             {holiday.localName}
                                         </p>
-                                        <p className="text-sm text-muted-foreground">
+                                        <p className="text-xs sm:text-sm text-muted-foreground">
                                             {formattedDate} ({dayOfWeek})
                                         </p>
                                     </div>
-                                    <span className="text-sm text-primary font-medium">
+                                    <span className="text-xs sm:text-sm text-primary font-medium">
                                         {daysText}
                                     </span>
                                 </li>

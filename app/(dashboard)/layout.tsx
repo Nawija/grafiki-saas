@@ -70,8 +70,8 @@ export default async function DashboardLayout({
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
             <Sidebar organizations={organizations} />
             <div className="lg:pl-72">
-                <Header user={profile} />
-                <main className="p-6">{children}</main>
+                <Header user={profile} organizations={organizations} />
+                <main className="p-4 sm:p-6">{children}</main>
             </div>
         </div>
     );

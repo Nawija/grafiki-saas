@@ -118,32 +118,32 @@ export default async function DashboardPage({
     ];
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
             <div>
-                <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+                <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
                     Dashboard
                 </h1>
-                <p className="text-slate-600 dark:text-slate-400">
+                <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400">
                     Witaj w systemie zarządzania grafikami pracy
                 </p>
             </div>
 
             {/* Stats */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
                 {stats.map((stat) => (
                     <Card key={stat.name}>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 sm:p-6 pb-1 sm:pb-2">
+                            <CardTitle className="text-xs sm:text-sm font-medium">
                                 {stat.name}
                             </CardTitle>
-                            <stat.icon className="h-4 w-4 text-muted-foreground" />
+                            <stat.icon className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
                         </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">
+                        <CardContent className="p-3 sm:p-6 pt-1 sm:pt-0">
+                            <div className="text-lg sm:text-2xl font-bold">
                                 {stat.value}
                             </div>
                             {stat.description && (
-                                <p className="text-xs text-muted-foreground">
+                                <p className="text-[10px] sm:text-xs text-muted-foreground">
                                     {stat.description}
                                 </p>
                             )}
@@ -152,7 +152,7 @@ export default async function DashboardPage({
                 ))}
             </div>
 
-            <div className="grid gap-6 lg:grid-cols-2">
+            <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
                 {/* Work Hours Summary */}
                 <WorkHoursSummary
                     workHours={workHours}

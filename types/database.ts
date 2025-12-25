@@ -335,6 +335,46 @@ export interface Database {
                 };
                 Relationships: [];
             };
+            organization_settings: {
+                Row: {
+                    id: string;
+                    organization_id: string;
+                    trading_sundays_mode: "all" | "none" | "custom";
+                    custom_trading_sundays: string[] | null;
+                    default_shift_duration: number;
+                    default_break_minutes: number;
+                    created_at: string;
+                    updated_at: string;
+                };
+                Insert: {
+                    id?: string;
+                    organization_id: string;
+                    trading_sundays_mode?: "all" | "none" | "custom";
+                    custom_trading_sundays?: string[] | null;
+                    default_shift_duration?: number;
+                    default_break_minutes?: number;
+                    created_at?: string;
+                    updated_at?: string;
+                };
+                Update: {
+                    id?: string;
+                    organization_id?: string;
+                    trading_sundays_mode?: "all" | "none" | "custom";
+                    custom_trading_sundays?: string[] | null;
+                    default_shift_duration?: number;
+                    default_break_minutes?: number;
+                    created_at?: string;
+                    updated_at?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "organization_settings_organization_id_fkey";
+                        columns: ["organization_id"];
+                        referencedRelation: "organizations";
+                        referencedColumns: ["id"];
+                    }
+                ];
+            };
         };
         Views: {
             [_ in never]: never;
@@ -367,3 +407,4 @@ export type Employee = Tables<"employees">;
 export type Schedule = Tables<"schedules">;
 export type Shift = Tables<"shifts">;
 export type ShiftTemplate = Tables<"shift_templates">;
+export type OrganizationSettings = Tables<"organization_settings">;

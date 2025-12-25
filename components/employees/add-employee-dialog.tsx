@@ -4,7 +4,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { employeeSchema, type EmployeeInput } from "@/lib/validations/employee";
+import {
+    employeeSchema,
+    type EmployeeInput,
+    EMPLOYEE_COLORS,
+} from "@/lib/validations/employee";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,7 +29,8 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Loader2 } from "lucide-react";
+import { Plus, Loader2, Check } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface AddEmployeeDialogProps {
     organizationId: string;
@@ -215,6 +220,36 @@ export function AddEmployeeDialog({
                             )}
                         </div>
                     )}
+
+                    <div className="space-y-2">
+                        <Label>Kolor pracownika</Label>
+                        <div className="flex flex-wrap gap-2">
+                            {EMPLOYEE_COLORS.map((color) => (
+                                <button
+                                    key={color}
+                                    type="button"
+                                    onClick={() => setValue("color", color)}
+                                    className={cn(
+                                        "w-8 h-8 rounded-full border-2 transition-all flex items-center justify-center",
+                                        watch("color") === color
+                                            ? "border-slate-900 dark:border-white scale-110"
+                                            : "border-transparent hover:scale-105"
+                                    )}
+                                    style={{ backgroundColor: color }}
+                                    disabled={isLoading}
+                                >
+                                    {watch("color") === color && (
+                                        <Check className="h-4 w-4 text-white drop-shadow-md" />
+                                    )}
+                                </button>
+                            ))}
+                        </div>
+                        {errors.color && (
+                            <p className="text-sm text-red-500">
+                                {errors.color.message}
+                            </p>
+                        )}
+                    </div>
 
                     <div className="flex justify-end gap-2 pt-4">
                         <Button

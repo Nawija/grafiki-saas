@@ -82,13 +82,13 @@ export default async function EmployeesPage({
     const showAddDialog = params.action === "new";
 
     return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
+        <div className="space-y-4 sm:space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+                    <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
                         Pracownicy
                     </h1>
-                    <p className="text-slate-600 dark:text-slate-400">
+                    <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400">
                         Zarządzaj pracownikami w organizacji {currentOrg.name}
                     </p>
                 </div>

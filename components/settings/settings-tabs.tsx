@@ -2,10 +2,11 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Profile, OrganizationWithRole } from "@/types";
-import { ShiftTemplate } from "@/types/database";
+import { ShiftTemplate, OrganizationSettings } from "@/types/database";
 import { ProfileSettings } from "./profile-settings";
 import { OrganizationsSettings } from "./organizations-settings";
 import { ShiftTemplatesSettings } from "./shift-templates-settings";
+import { OrganizationSettingsComponent } from "./organization-settings";
 
 interface SettingsTabsProps {
     profile: Profile | null;
@@ -14,6 +15,7 @@ interface SettingsTabsProps {
     userId: string;
     shiftTemplates: ShiftTemplate[];
     currentOrganizationId?: string;
+    organizationSettings?: OrganizationSettings | null;
 }
 
 export function SettingsTabs({
@@ -23,6 +25,7 @@ export function SettingsTabs({
     userId,
     shiftTemplates,
     currentOrganizationId,
+    organizationSettings,
 }: SettingsTabsProps) {
     return (
         <Tabs defaultValue={defaultTab} className="space-y-6">
@@ -30,7 +33,14 @@ export function SettingsTabs({
                 <TabsTrigger value="profile">Profil</TabsTrigger>
                 <TabsTrigger value="organizations">Organizacje</TabsTrigger>
                 {currentOrganizationId && (
-                    <TabsTrigger value="templates">Szablony zmian</TabsTrigger>
+                    <>
+                        <TabsTrigger value="templates">
+                            Szablony zmian
+                        </TabsTrigger>
+                        <TabsTrigger value="org-settings">
+                            Ustawienia org.
+                        </TabsTrigger>
+                    </>
                 )}
             </TabsList>
 
@@ -46,12 +56,21 @@ export function SettingsTabs({
             </TabsContent>
 
             {currentOrganizationId && (
-                <TabsContent value="templates">
-                    <ShiftTemplatesSettings
-                        templates={shiftTemplates}
-                        organizationId={currentOrganizationId}
-                    />
-                </TabsContent>
+                <>
+                    <TabsContent value="templates">
+                        <ShiftTemplatesSettings
+                            templates={shiftTemplates}
+                            organizationId={currentOrganizationId}
+                        />
+                    </TabsContent>
+
+                    <TabsContent value="org-settings">
+                        <OrganizationSettingsComponent
+                            organizationId={currentOrganizationId}
+                            settings={organizationSettings || null}
+                        />
+                    </TabsContent>
+                </>
             )}
         </Tabs>
     );

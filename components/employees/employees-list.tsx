@@ -63,13 +63,122 @@ export function EmployeesList({
 
     return (
         <>
-            <Card>
+            {/* Widok mobilny - karty */}
+            <div className="grid gap-3 sm:hidden">
+                {employees.map((employee) => (
+                    <Card key={employee.id}>
+                        <CardContent className="p-4">
+                            <div className="flex items-start justify-between">
+                                <div className="flex items-center gap-2">
+                                    <div
+                                        className="h-3 w-3 rounded-full flex-shrink-0"
+                                        style={{
+                                            backgroundColor: employee.color,
+                                        }}
+                                    />
+                                    <div>
+                                        <div className="font-medium">
+                                            {employee.first_name}{" "}
+                                            {employee.last_name}
+                                        </div>
+                                        <div className="text-sm text-muted-foreground">
+                                            {getEmploymentTypeLabel(
+                                                employee.employment_type
+                                            )}
+                                            {employee.employment_type ===
+                                                "custom" &&
+                                                employee.custom_hours && (
+                                                    <span className="ml-1">
+                                                        ({employee.custom_hours}
+                                                        h/dzień)
+                                                    </span>
+                                                )}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Badge
+                                        variant={
+                                            employee.is_active
+                                                ? "default"
+                                                : "secondary"
+                                        }
+                                    >
+                                        {employee.is_active
+                                            ? "Aktywny"
+                                            : "Nieaktywny"}
+                                    </Badge>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-8 w-8"
+                                            >
+                                                <MoreHorizontal className="h-4 w-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuItem
+                                                onClick={() =>
+                                                    setEditingEmployee(employee)
+                                                }
+                                            >
+                                                <Pencil className="mr-2 h-4 w-4" />
+                                                Edytuj
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem
+                                                onClick={() =>
+                                                    setDeletingEmployee(
+                                                        employee
+                                                    )
+                                                }
+                                                className="text-red-600"
+                                            >
+                                                <Trash2 className="mr-2 h-4 w-4" />
+                                                Usuń
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
+                            </div>
+                            {(employee.email || employee.phone) && (
+                                <div className="mt-3 pt-3 border-t flex flex-col gap-1">
+                                    {employee.email && (
+                                        <a
+                                            href={`mailto:${employee.email}`}
+                                            className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+                                        >
+                                            <Mail className="h-3 w-3" />
+                                            {employee.email}
+                                        </a>
+                                    )}
+                                    {employee.phone && (
+                                        <a
+                                            href={`tel:${employee.phone}`}
+                                            className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+                                        >
+                                            <Phone className="h-3 w-3" />
+                                            {employee.phone}
+                                        </a>
+                                    )}
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                ))}
+            </div>
+
+            {/* Widok desktop - tabela */}
+            <Card className="hidden sm:block">
                 <Table>
                     <TableHeader>
                         <TableRow>
                             <TableHead>Imię i nazwisko</TableHead>
                             <TableHead>Etat</TableHead>
-                            <TableHead>Kontakt</TableHead>
+                            <TableHead className="hidden md:table-cell">
+                                Kontakt
+                            </TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead className="w-[50px]"></TableHead>
                         </TableRow>
@@ -104,7 +213,7 @@ export function EmployeesList({
                                             )}
                                     </div>
                                 </TableCell>
-                                <TableCell>
+                                <TableCell className="hidden md:table-cell">
                                     <div className="flex flex-col gap-1">
                                         {employee.email && (
                                             <a

@@ -75,6 +75,18 @@ export default async function SettingsPage({
         updated_at: string;
     }> = [];
 
+    // Pobierz ustawienia organizacji
+    let organizationSettings: {
+        id: string;
+        organization_id: string;
+        trading_sundays_mode: "all" | "none" | "custom";
+        custom_trading_sundays: string[] | null;
+        default_shift_duration: number;
+        default_break_minutes: number;
+        created_at: string;
+        updated_at: string;
+    } | null = null;
+
     if (currentOrg) {
         const { data: templates } = await supabase
             .from("shift_templates")
@@ -83,6 +95,14 @@ export default async function SettingsPage({
             .order("name");
 
         shiftTemplates = templates || [];
+
+        const { data: settings } = await supabase
+            .from("organization_settings")
+            .select("*")
+            .eq("organization_id", currentOrg.id)
+            .single();
+
+        organizationSettings = settings;
     }
 
     const defaultTab = params.tab || "profile";
@@ -105,6 +125,7 @@ export default async function SettingsPage({
                 userId={user.id}
                 shiftTemplates={shiftTemplates}
                 currentOrganizationId={currentOrg?.id}
+                organizationSettings={organizationSettings}
             />
         </div>
     );

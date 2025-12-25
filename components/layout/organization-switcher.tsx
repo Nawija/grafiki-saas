@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { OrganizationWithRole } from "@/types";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,16 +22,35 @@ export function OrganizationSwitcher({
 }: OrganizationSwitcherProps) {
     const router = useRouter();
     const searchParams = useSearchParams();
+    const pathname = usePathname();
     const currentOrgSlug = searchParams.get("org");
 
     const currentOrg =
         organizations.find((o) => o.slug === currentOrgSlug) ||
         organizations[0];
 
+    // Ustaw cookie gdy organizacja się zmieni
+    useEffect(() => {
+        if (currentOrg) {
+            document.cookie = `current_organization=${currentOrg.id}; path=/; max-age=31536000`;
+        }
+    }, [currentOrg]);
+
     function handleSelectOrganization(slug: string) {
         const params = new URLSearchParams(searchParams);
         params.set("org", slug);
-        router.push(`?${params.toString()}`);
+
+        // Zachowaj bieżącą ścieżkę ale usuń inne parametry które mogą być specyficzne dla starej org
+        // Zachowaj year i month dla schedule
+        const newParams = new URLSearchParams();
+        newParams.set("org", slug);
+
+        if (params.has("year")) newParams.set("year", params.get("year")!);
+        if (params.has("month")) newParams.set("month", params.get("month")!);
+        if (params.has("tab")) newParams.set("tab", params.get("tab")!);
+
+        router.push(`${pathname}?${newParams.toString()}`);
+        router.refresh();
     }
 
     if (organizations.length === 0) {
