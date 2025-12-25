@@ -37,7 +37,11 @@ export function UpcomingHolidays({ holidays }: UpcomingHolidaysProps) {
                 ) : (
                     <ul className="space-y-2 sm:space-y-3">
                         {upcoming.map((holiday) => {
-                            const date = new Date(holiday.date);
+                            // Parse date as local time (add T00:00:00 to avoid UTC interpretation)
+                            const [year, month, day] = holiday.date
+                                .split("-")
+                                .map(Number);
+                            const date = new Date(year, month - 1, day);
                             const dayOfWeek = date.toLocaleDateString("pl-PL", {
                                 weekday: "long",
                             });
@@ -53,7 +57,7 @@ export function UpcomingHolidays({ holidays }: UpcomingHolidaysProps) {
                             // Oblicz ile dni do święta
                             const today = new Date();
                             today.setHours(0, 0, 0, 0);
-                            const holidayDate = new Date(holiday.date);
+                            const holidayDate = new Date(year, month - 1, day);
                             holidayDate.setHours(0, 0, 0, 0);
                             const daysUntil = Math.ceil(
                                 (holidayDate.getTime() - today.getTime()) /

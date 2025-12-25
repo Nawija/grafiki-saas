@@ -48,14 +48,23 @@ export async function fetchHolidaysForYears(
 }
 
 /**
+ * Formatuje datę do stringa YYYY-MM-DD bez konwersji UTC (lokalny czas)
+ */
+function formatDateLocal(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+}
+
+/**
  * Sprawdza czy dana data jest świętem
  */
 export function isHoliday(
     date: Date | string,
     holidays: PublicHoliday[]
 ): PublicHoliday | undefined {
-    const dateStr =
-        typeof date === "string" ? date : date.toISOString().split("T")[0];
+    const dateStr = typeof date === "string" ? date : formatDateLocal(date);
 
     return holidays.find((holiday) => holiday.date === dateStr);
 }
@@ -68,7 +77,7 @@ export function getUpcomingHolidays(
     fromDate: Date = new Date(),
     limit: number = 5
 ): PublicHoliday[] {
-    const today = fromDate.toISOString().split("T")[0];
+    const today = formatDateLocal(fromDate);
 
     return holidays.filter((holiday) => holiday.date >= today).slice(0, limit);
 }
@@ -82,7 +91,8 @@ export function groupHolidaysByMonth(
     const grouped = new Map<number, PublicHoliday[]>();
 
     holidays.forEach((holiday) => {
-        const month = new Date(holiday.date).getMonth() + 1;
+        // Parse as local date to avoid timezone issues
+        const month = parseInt(holiday.date.split("-")[1], 10);
         const existing = grouped.get(month) || [];
         grouped.set(month, [...existing, holiday]);
     });

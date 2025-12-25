@@ -52,10 +52,9 @@ export function calculateWorkingHours(
 
     // Filtruj święta dla danego miesiąca
     const monthHolidays = holidays.filter((h) => {
-        const holidayDate = new Date(h.date);
-        return (
-            getYear(holidayDate) === year && getMonth(holidayDate) + 1 === month
-        );
+        // Parse date string directly to avoid timezone issues
+        const [hYear, hMonth] = h.date.split("-").map(Number);
+        return hYear === year && hMonth === month;
     });
 
     const holidayDates = new Set(monthHolidays.map((h) => h.date));

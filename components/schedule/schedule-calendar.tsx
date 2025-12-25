@@ -233,6 +233,11 @@ export function ScheduleCalendar({
 
             setIsMoving(true);
 
+            // Zapisz wartości przed wykonaniem operacji
+            const sourceEmployeeId = draggedShift.employee_id;
+            const sourceDate = draggedShift.date;
+            const sourceShiftId = draggedShift.id;
+
             try {
                 const supabase = createClient();
 
@@ -244,31 +249,37 @@ export function ScheduleCalendar({
                 );
 
                 if (existingShift) {
-                    // Zamień zmiany miejscami
-                    await supabase
-                        .from("shifts")
-                        .update({
-                            employee_id: targetEmployeeId,
-                            date: targetDate,
-                        })
-                        .eq("id", draggedShift.id);
+                    // Zamień zmiany miejscami - użyj Promise.all dla atomowości
+                    const [result1, result2] = await Promise.all([
+                        supabase
+                            .from("shifts")
+                            .update({
+                                employee_id: targetEmployeeId,
+                                date: targetDate,
+                            })
+                            .eq("id", sourceShiftId),
+                        supabase
+                            .from("shifts")
+                            .update({
+                                employee_id: sourceEmployeeId,
+                                date: sourceDate,
+                            })
+                            .eq("id", existingShift.id),
+                    ]);
 
-                    await supabase
-                        .from("shifts")
-                        .update({
-                            employee_id: draggedShift.employee_id,
-                            date: draggedShift.date,
-                        })
-                        .eq("id", existingShift.id);
+                    if (result1.error) throw result1.error;
+                    if (result2.error) throw result2.error;
                 } else {
                     // Przenieś zmianę
-                    await supabase
+                    const { error } = await supabase
                         .from("shifts")
                         .update({
                             employee_id: targetEmployeeId,
                             date: targetDate,
                         })
-                        .eq("id", draggedShift.id);
+                        .eq("id", sourceShiftId);
+
+                    if (error) throw error;
                 }
 
                 router.refresh();
@@ -293,9 +304,13 @@ export function ScheduleCalendar({
 
         setIsSwapping(true);
 
+        // Zapisz wartości przed wykonaniem operacji
+        const sourceShift = swapDialog.shift;
+        const sourceEmployeeId = sourceShift.employee_id;
+        const sourceShiftId = sourceShift.id;
+
         try {
             const supabase = createClient();
-            const sourceShift = swapDialog.shift;
 
             // Znajdź zmianę docelowego pracownika w tym samym dniu
             const targetShift = shifts.find(
@@ -305,22 +320,28 @@ export function ScheduleCalendar({
             );
 
             if (targetShift) {
-                // Zamień zmiany
-                await supabase
-                    .from("shifts")
-                    .update({ employee_id: swapTargetEmployee })
-                    .eq("id", sourceShift.id);
+                // Zamień zmiany - użyj Promise.all dla atomowości
+                const [result1, result2] = await Promise.all([
+                    supabase
+                        .from("shifts")
+                        .update({ employee_id: swapTargetEmployee })
+                        .eq("id", sourceShiftId),
+                    supabase
+                        .from("shifts")
+                        .update({ employee_id: sourceEmployeeId })
+                        .eq("id", targetShift.id),
+                ]);
 
-                await supabase
-                    .from("shifts")
-                    .update({ employee_id: sourceShift.employee_id })
-                    .eq("id", targetShift.id);
+                if (result1.error) throw result1.error;
+                if (result2.error) throw result2.error;
             } else {
                 // Tylko przenieś zmianę (swap z pustym)
-                await supabase
+                const { error } = await supabase
                     .from("shifts")
                     .update({ employee_id: swapTargetEmployee })
-                    .eq("id", sourceShift.id);
+                    .eq("id", sourceShiftId);
+
+                if (error) throw error;
             }
 
             router.refresh();
@@ -477,7 +498,7 @@ export function ScheduleCalendar({
                                         <td className="border p-1 sm:p-2 sticky left-0 bg-white dark:bg-slate-900 z-10">
                                             <div className="flex items-center gap-1.5 sm:gap-2">
                                                 <div
-                                                    className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full flex-shrink-0"
+                                                    className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full shrink-0"
                                                     style={{
                                                         backgroundColor:
                                                             employee.color ||

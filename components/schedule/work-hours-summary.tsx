@@ -123,22 +123,30 @@ export function WorkHoursSummary({
                             Święta w tym miesiącu:
                         </p>
                         <ul className="space-y-1">
-                            {workHours.holidays.map((holiday) => (
-                                <li
-                                    key={holiday.date}
-                                    className="text-xs sm:text-sm text-muted-foreground flex justify-between"
-                                >
-                                    <span>{holiday.localName}</span>
-                                    <span>
-                                        {new Date(
-                                            holiday.date
-                                        ).toLocaleDateString("pl-PL", {
-                                            day: "numeric",
-                                            month: "short",
-                                        })}
-                                    </span>
-                                </li>
-                            ))}
+                            {workHours.holidays.map((holiday) => {
+                                // Parse date as local time to avoid timezone issues
+                                const [y, m, d] = holiday.date
+                                    .split("-")
+                                    .map(Number);
+                                const localDate = new Date(y, m - 1, d);
+                                return (
+                                    <li
+                                        key={holiday.date}
+                                        className="text-xs sm:text-sm text-muted-foreground flex justify-between"
+                                    >
+                                        <span>{holiday.localName}</span>
+                                        <span>
+                                            {localDate.toLocaleDateString(
+                                                "pl-PL",
+                                                {
+                                                    day: "numeric",
+                                                    month: "short",
+                                                }
+                                            )}
+                                        </span>
+                                    </li>
+                                );
+                            })}
                         </ul>
                     </div>
                 )}

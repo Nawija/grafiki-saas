@@ -11,7 +11,6 @@ import {
     Building2,
     Plus,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { OrganizationWithRole } from "@/types";
 import { OrganizationSwitcher } from "./organization-switcher";
 
