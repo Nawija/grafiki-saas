@@ -128,7 +128,7 @@ export default async function DashboardPage({
     return (
         <div className="space-y-6 sm:space-y-8">
             {/* Hero Header */}
-            <Card className="relative overflow-hidden border-0 bg-linear-to-br from-blue-100 to-pink-100 dark:from-slate-900 dark:to-slate-800">
+            <Card className="relative overflow-hidden border-0 bg-linear-to-r from-blue-100 to-pink-200 dark:from-slate-900 dark:to-slate-800">
                 <div className="absolute -top-24 -right-24 w-64 h-64 bg-slate-200/50 dark:bg-slate-700/30 rounded-full blur-3xl" />
                 <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-gray-200/50 dark:bg-gray-700/30 rounded-full blur-3xl" />
 
