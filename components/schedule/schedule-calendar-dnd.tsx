@@ -34,6 +34,7 @@ import { getRequiredHours, calculateWorkedHours } from "@/lib/utils/work-hours";
 import { DraggableEmployee } from "./draggable-employee";
 import { DroppableShiftCell } from "./droppable-shift-cell";
 import { ShiftEditDialog } from "./shift-edit-dialog";
+import { ClearScheduleButton } from "./clear-schedule-button";
 
 import type {
     Employee,
@@ -430,6 +431,11 @@ export function ScheduleCalendarDnD({
         );
     }, []);
 
+    // Wyczyść cały grafik (callback dla ClearScheduleButton)
+    const handleClearSchedule = useCallback(() => {
+        setLocalShifts([]);
+    }, []);
+
     // Edytuj zmianę
     const handleEditShift = useCallback((shift: LocalShift) => {
         setEditingShift(shift);
@@ -648,12 +654,24 @@ export function ScheduleCalendarDnD({
                             <Users className="h-4 w-4" />
                             Pracownicy
                         </h3>
-                        <span className="text-xs text-slate-500">
-                            <span className="hidden sm:inline">
-                                Przeciągnij pracownika na zmianę •{" "}
+                        <div className="flex items-center gap-2">
+                            <span className="text-xs text-slate-500">
+                                <span className="hidden sm:inline">
+                                    Przeciągnij pracownika na zmianę •{" "}
+                                </span>
+                                {employees.length} os.
                             </span>
-                            {employees.length} os.
-                        </span>
+                            <ClearScheduleButton
+                                scheduleId={scheduleId}
+                                monthName={format(
+                                    new Date(year, month - 1),
+                                    "LLLL yyyy",
+                                    { locale: pl }
+                                )}
+                                shiftsCount={activeShifts.length}
+                                onClear={handleClearSchedule}
+                            />
+                        </div>
                     </div>
                     <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
                         {employees.map((employee) => {

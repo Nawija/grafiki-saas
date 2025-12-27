@@ -21,12 +21,14 @@ interface ClearScheduleButtonProps {
     scheduleId: string;
     monthName: string;
     shiftsCount: number;
+    onClear?: () => void;
 }
 
 export function ClearScheduleButton({
     scheduleId,
     monthName,
     shiftsCount,
+    onClear,
 }: ClearScheduleButtonProps) {
     const router = useRouter();
     const [isClearing, setIsClearing] = useState(false);
@@ -47,7 +49,13 @@ export function ClearScheduleButton({
             if (error) throw error;
 
             setOpen(false);
-            router.refresh();
+
+            // Wywołaj callback jeśli istnieje
+            if (onClear) {
+                onClear();
+            } else {
+                router.refresh();
+            }
         } catch (error) {
             console.error("Error clearing schedule:", error);
         } finally {

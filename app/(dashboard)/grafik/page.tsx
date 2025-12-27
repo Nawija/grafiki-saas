@@ -5,7 +5,6 @@ import { pl } from "date-fns/locale";
 import { ScheduleCalendarDnD } from "@/components/schedule/schedule-calendar-dnd";
 import { MonthSelector } from "@/components/schedule/month-selector";
 import { ShiftTemplatesManager } from "@/components/schedule/shift-templates-manager";
-import { ClearScheduleButton } from "@/components/schedule/clear-schedule-button";
 import { fetchHolidays } from "@/lib/api/holidays";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
@@ -179,15 +178,6 @@ export default async function SchedulePage({
 
                 {/* Akcje - responsywne */}
                 <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                    <ClearScheduleButton
-                        scheduleId={schedule?.id || ""}
-                        monthName={format(
-                            new Date(year, month - 1),
-                            "LLLL yyyy",
-                            { locale: pl }
-                        )}
-                        shiftsCount={shifts?.length || 0}
-                    />
                     <ShiftTemplatesManager
                         templates={shiftTemplates || []}
                         organizationId={organizationId}
