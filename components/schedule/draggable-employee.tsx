@@ -47,18 +47,18 @@ export function DraggableEmployee({
             {...listeners}
             {...attributes}
             className={cn(
-                "flex items-center gap-2 px-3 py-2 rounded-lg cursor-grab active:cursor-grabbing",
+                "flex items-center gap-2 px-2 py-1.5 rounded-lg cursor-grab active:cursor-grabbing",
                 "border shadow-sm",
                 "hover:shadow transition-all",
                 "select-none touch-none",
-                isDragging && "opacity-50 shadow-lg",
+                isDragging && "opacity-0",
                 isComplete
                     ? "bg-green-50 border-green-300 hover:border-green-400"
                     : "bg-white border-slate-200 hover:border-slate-300"
             )}
         >
             <div
-                className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0"
                 style={{ backgroundColor: employeeColor }}
             >
                 {employee.first_name[0]}

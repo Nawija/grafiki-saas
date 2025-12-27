@@ -685,9 +685,9 @@ export function ScheduleCalendarDnD({
                     <DragOverlay dropAnimation={null}>
                         {activeEmployee && (
                             <div
-                                className="bg-white border-2 shadow-xl rounded-lg px-3 py-2 flex items-center gap-2 pointer-events-none"
+                                className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white shadow-xl pointer-events-none"
                                 style={{
-                                    borderColor:
+                                    backgroundColor:
                                         (
                                             activeEmployee as Employee & {
                                                 color?: string;
@@ -695,24 +695,8 @@ export function ScheduleCalendarDnD({
                                         ).color || "#3b82f6",
                                 }}
                             >
-                                <div
-                                    className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white"
-                                    style={{
-                                        backgroundColor:
-                                            (
-                                                activeEmployee as Employee & {
-                                                    color?: string;
-                                                }
-                                            ).color || "#3b82f6",
-                                    }}
-                                >
-                                    {activeEmployee.first_name[0]}
-                                    {activeEmployee.last_name[0]}
-                                </div>
-                                <span className="font-medium text-sm text-slate-900">
-                                    {activeEmployee.first_name}{" "}
-                                    {activeEmployee.last_name}
-                                </span>
+                                {activeEmployee.first_name[0]}
+                                {activeEmployee.last_name[0]}
                             </div>
                         )}
                     </DragOverlay>,

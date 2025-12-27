@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { EmployeeBadge } from "./draggable-employee";
 import type { Employee, ShiftTemplate } from "@/types";
 import type { LocalShift } from "./schedule-calendar-dnd";
+import { Plus } from "lucide-react";
 
 interface DroppableShiftCellProps {
     date: string; // yyyy-MM-dd
@@ -54,8 +55,7 @@ export function DroppableShiftCell({
         <div
             ref={setNodeRef}
             className={cn(
-                "min-h-[60px] p-1 border-r border-b border-slate-200 transition-colors",
-                isOver && "bg-blue-100 ring-2 ring-blue-400 ring-inset",
+                "min-h-[60px] p-1 border-r border-b border-slate-200 transition-colors relative",
                 isNonWorkingDay && "bg-slate-50",
                 !isOver && !isNonWorkingDay && "hover:bg-slate-50/50"
             )}
@@ -75,14 +75,12 @@ export function DroppableShiftCell({
                         />
                     );
                 })}
-                {cellShifts.length === 0 && isOver && (
-                    <div className="h-8 rounded border-2 border-dashed border-blue-400 bg-blue-50 flex items-center justify-center">
-                        <span className="text-xs text-blue-600">
-                            Upuść tutaj
-                        </span>
-                    </div>
-                )}
             </div>
+            {isOver && (
+                <div className="absolute inset-0 rounded border-2 border-dashed border-blue-400 text-blue-500 bg-blue-100/80 flex items-center justify-center z-10">
+                    <Plus className="w-6 h-6" />
+                </div>
+            )}
         </div>
     );
 }
