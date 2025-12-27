@@ -84,6 +84,7 @@ CREATE TABLE IF NOT EXISTS shifts (
   end_time TIME NOT NULL,
   break_minutes INTEGER DEFAULT 0,
   notes TEXT,
+  color TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE(schedule_id, employee_id, date)

@@ -321,7 +321,17 @@ export function ScheduleCalendarDnD({
 
     // Zapisz wszystkie zmiany do bazy
     const handleSaveAll = useCallback(async () => {
+        if (!scheduleId) {
+            toast.error("Brak identyfikatora grafiku");
+            console.error("scheduleId jest pusty!");
+            return;
+        }
+
         setIsSaving(true);
+
+        console.log("=== ROZPOCZYNAM ZAPIS ===");
+        console.log("scheduleId:", scheduleId);
+        console.log("Wszystkie zmiany:", localShifts);
 
         try {
             // Nowe zmiany do dodania
@@ -350,42 +360,88 @@ export function ScheduleCalendarDnD({
                 )
                 .map((s) => s.id);
 
-            // Wykonaj operacje
-            const operations = [];
+            console.log("Nowe zmiany do dodania:", newShifts);
+            console.log("Zmiany do aktualizacji:", modifiedShifts);
+            console.log("ID zmian do usunięcia:", deletedShiftIds);
 
+            // Wykonaj operacje sekwencyjnie i sprawdź błędy
             if (newShifts.length > 0) {
-                operations.push(supabase.from("shifts").insert(newShifts));
+                console.log("Wysyłam INSERT...");
+                const { data, error } = await supabase
+                    .from("shifts")
+                    .insert(newShifts)
+                    .select();
+                console.log("INSERT wynik - data:", data, "error:", error);
+                if (error) {
+                    console.error("Błąd dodawania zmian:", error);
+                    toast.error(
+                        `Błąd INSERT: ${error.message} (${error.code})`
+                    );
+                    setIsSaving(false);
+                    return;
+                }
             }
 
             for (const shift of modifiedShifts) {
-                operations.push(
-                    supabase
-                        .from("shifts")
-                        .update({
-                            start_time: shift.start_time,
-                            end_time: shift.end_time,
-                            break_minutes: shift.break_minutes,
-                            notes: shift.notes,
-                            color: shift.color,
-                        })
-                        .eq("id", shift.id)
-                );
+                const { error } = await supabase
+                    .from("shifts")
+                    .update({
+                        start_time: shift.start_time,
+                        end_time: shift.end_time,
+                        break_minutes: shift.break_minutes,
+                        notes: shift.notes,
+                        color: shift.color,
+                    })
+                    .eq("id", shift.id);
+                if (error) {
+                    console.error("Błąd aktualizacji zmiany:", error);
+                    toast.error(
+                        `Błąd UPDATE: ${error.message} (${error.code})`
+                    );
+                    setIsSaving(false);
+                    return;
+                }
             }
 
             if (deletedShiftIds.length > 0) {
-                operations.push(
-                    supabase.from("shifts").delete().in("id", deletedShiftIds)
-                );
+                console.log("Wysyłam DELETE...");
+                const { error } = await supabase
+                    .from("shifts")
+                    .delete()
+                    .in("id", deletedShiftIds);
+                console.log("DELETE wynik - error:", error);
+                if (error) {
+                    console.error("Błąd usuwania zmian:", error);
+                    toast.error(
+                        `Błąd DELETE: ${error.message} (${error.code})`
+                    );
+                    setIsSaving(false);
+                    return;
+                }
             }
 
-            await Promise.all(operations);
-
             // Odśwież dane
-            const { data: refreshedShifts } = await supabase
+            console.log("Pobieram odświeżone dane...");
+            const { data: refreshedShifts, error: fetchError } = await supabase
                 .from("shifts")
                 .select("*")
                 .eq("schedule_id", scheduleId);
 
+            console.log(
+                "Pobrane zmiany:",
+                refreshedShifts,
+                "error:",
+                fetchError
+            );
+
+            if (fetchError) {
+                console.error("Błąd pobierania zmian:", fetchError);
+                toast.error(`Błąd SELECT: ${fetchError.message}`);
+                setIsSaving(false);
+                return;
+            }
+
+            console.log("Ustawiam nowy stan localShifts...");
             setLocalShifts(
                 (refreshedShifts || []).map((s) => ({
                     ...s,
@@ -393,10 +449,13 @@ export function ScheduleCalendarDnD({
                 }))
             );
 
+            console.log("=== ZAPIS ZAKOŃCZONY SUKCESEM ===");
             toast.success("Grafik został zapisany");
-        } catch (error) {
+        } catch (error: unknown) {
             console.error("Błąd zapisu:", error);
-            toast.error("Wystąpił błąd podczas zapisywania");
+            const errorMessage =
+                error instanceof Error ? error.message : JSON.stringify(error);
+            toast.error(`Błąd: ${errorMessage}`);
         } finally {
             setIsSaving(false);
         }
