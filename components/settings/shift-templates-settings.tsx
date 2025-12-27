@@ -48,9 +48,9 @@ export function ShiftTemplatesSettings({
 
     const [formData, setFormData] = useState({
         name: "",
-        startTime: "08:00",
-        endTime: "16:00",
-        breakMinutes: 30,
+        startTime: "06:00",
+        endTime: "14:00",
+        breakMinutes: 0,
         color: "#3b82f6",
     });
 

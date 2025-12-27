@@ -335,6 +335,7 @@ export interface Database {
                     end_time: string;
                     break_minutes: number;
                     color: string;
+                    min_employees: number;
                     created_at: string;
                     updated_at: string;
                 };
@@ -346,6 +347,7 @@ export interface Database {
                     end_time: string;
                     break_minutes?: number;
                     color?: string;
+                    min_employees?: number;
                     created_at?: string;
                     updated_at?: string;
                 };
@@ -357,6 +359,7 @@ export interface Database {
                     end_time?: string;
                     break_minutes?: number;
                     color?: string;
+                    min_employees?: number;
                     created_at?: string;
                     updated_at?: string;
                 };
@@ -401,6 +404,10 @@ export interface Database {
                     custom_trading_sundays: string[] | null;
                     default_shift_duration: number;
                     default_break_minutes: number;
+                    store_open_time: string;
+                    store_close_time: string;
+                    min_employees_per_shift: number;
+                    enable_trading_sundays: boolean;
                     created_at: string;
                     updated_at: string;
                 };
@@ -411,6 +418,10 @@ export interface Database {
                     custom_trading_sundays?: string[] | null;
                     default_shift_duration?: number;
                     default_break_minutes?: number;
+                    store_open_time?: string;
+                    store_close_time?: string;
+                    min_employees_per_shift?: number;
+                    enable_trading_sundays?: boolean;
                     created_at?: string;
                     updated_at?: string;
                 };
@@ -421,6 +432,10 @@ export interface Database {
                     custom_trading_sundays?: string[] | null;
                     default_shift_duration?: number;
                     default_break_minutes?: number;
+                    store_open_time?: string;
+                    store_close_time?: string;
+                    min_employees_per_shift?: number;
+                    enable_trading_sundays?: boolean;
                     created_at?: string;
                     updated_at?: string;
                 };

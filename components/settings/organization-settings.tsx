@@ -32,7 +32,15 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, Calendar, ShoppingBag, Info } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import {
+    Loader2,
+    Calendar,
+    ShoppingBag,
+    Info,
+    Clock,
+    Store,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -57,8 +65,20 @@ export function OrganizationSettingsComponent({
     settings: initialSettings,
 }: OrganizationSettingsProps) {
     const router = useRouter();
-    const [isLoading, setIsLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+
+    // Godziny otwarcia sklepu/salonu
+    const [storeOpenTime, setStoreOpenTime] = useState(
+        initialSettings?.store_open_time?.substring(0, 5) || "06:00"
+    );
+    const [storeCloseTime, setStoreCloseTime] = useState(
+        initialSettings?.store_close_time?.substring(0, 5) || "22:00"
+    );
+    const [enableTradingSundays, setEnableTradingSundays] = useState(
+        initialSettings?.enable_trading_sundays ?? true
+    );
+
+    // Niedziele handlowe
     const [mode, setMode] = useState<"all" | "none" | "custom">(
         initialSettings?.trading_sundays_mode || "none"
     );
@@ -105,6 +125,9 @@ export function OrganizationSettingsComponent({
                     mode === "custom" ? customSundays : null,
                 default_shift_duration: defaultShiftDuration,
                 default_break_minutes: defaultBreakMinutes,
+                store_open_time: storeOpenTime,
+                store_close_time: storeCloseTime,
+                enable_trading_sundays: enableTradingSundays,
                 updated_at: new Date().toISOString(),
             };
 
@@ -126,7 +149,8 @@ export function OrganizationSettingsComponent({
             toast.success("Ustawienia zostały zapisane");
             router.refresh();
         } catch (error: any) {
-            const errorMessage = error?.message || error?.details || JSON.stringify(error);
+            const errorMessage =
+                error?.message || error?.details || JSON.stringify(error);
             console.error("Error saving settings:", errorMessage, error);
             toast.error(`Błąd podczas zapisywania: ${errorMessage}`);
         } finally {
@@ -157,18 +181,184 @@ export function OrganizationSettingsComponent({
 
     return (
         <div className="space-y-6">
+            <div className="flex justify-end">
+                <Button onClick={handleSave} disabled={isSaving}>
+                    {isSaving && (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
+                    Zapisz ustawienia
+                </Button>
+            </div>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Domyślne ustawienia zmian</CardTitle>
+                    <CardDescription>
+                        Ustawienia stosowane przy tworzeniu nowych zmian
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="defaultShiftDuration">
+                                Domyślna długość zmiany (godziny)
+                            </Label>
+                            <Input
+                                id="defaultShiftDuration"
+                                type="number"
+                                min="1"
+                                max="24"
+                                value={defaultShiftDuration}
+                                onChange={(e) =>
+                                    setDefaultShiftDuration(
+                                        parseInt(e.target.value) || 8
+                                    )
+                                }
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="defaultBreakMinutes">
+                                Domyślna przerwa (minuty)
+                            </Label>
+                            <Input
+                                id="defaultBreakMinutes"
+                                type="number"
+                                min="0"
+                                max="120"
+                                value={defaultBreakMinutes}
+                                onChange={(e) =>
+                                    setDefaultBreakMinutes(
+                                        parseInt(e.target.value) || 30
+                                    )
+                                }
+                            />
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
             <Card>
                 <CardHeader>
                     <div className="flex items-center gap-2">
-                        <ShoppingBag className="h-5 w-5" />
-                        <CardTitle>Niedziele handlowe</CardTitle>
+                        <Store className="h-5 w-5" />
+                        <CardTitle>Godziny otwarcia</CardTitle>
+                    </div>
+                    <CardDescription>
+                        Ustaw godziny otwarcia sklepu/salonu oraz minimalną
+                        liczbę pracowników na zmianie
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label
+                                htmlFor="storeOpenTime"
+                                className="flex items-center gap-2"
+                            >
+                                <Clock className="h-4 w-4 text-green-600" />
+                                Otwarcie
+                            </Label>
+                            <Input
+                                id="storeOpenTime"
+                                type="time"
+                                value={storeOpenTime}
+                                onChange={(e) =>
+                                    setStoreOpenTime(e.target.value)
+                                }
+                                className="font-mono"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label
+                                htmlFor="storeCloseTime"
+                                className="flex items-center gap-2"
+                            >
+                                <Clock className="h-4 w-4 text-red-600" />
+                                Zamknięcie
+                            </Label>
+                            <Input
+                                id="storeCloseTime"
+                                type="time"
+                                value={storeCloseTime}
+                                onChange={(e) =>
+                                    setStoreCloseTime(e.target.value)
+                                }
+                                className="font-mono"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg">
+                        <p className="text-sm text-muted-foreground">
+                            <strong>Podsumowanie:</strong> Sklep/salon otwarty
+                            od{" "}
+                            <span className="font-mono font-medium text-foreground">
+                                {storeOpenTime}
+                            </span>{" "}
+                            do{" "}
+                            <span className="font-mono font-medium text-foreground">
+                                {storeCloseTime}
+                            </span>{" "}
+                            (
+                            {(() => {
+                                const [openH, openM] = storeOpenTime
+                                    .split(":")
+                                    .map(Number);
+                                const [closeH, closeM] = storeCloseTime
+                                    .split(":")
+                                    .map(Number);
+                                const totalMinutes =
+                                    closeH * 60 + closeM - (openH * 60 + openM);
+                                const hours = Math.floor(totalMinutes / 60);
+                                const minutes = totalMinutes % 60;
+                                return `${hours}h${
+                                    minutes > 0 ? ` ${minutes}min` : ""
+                                }`;
+                            })()}
+                            )
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                            Liczbę osób na zmianie ustawiasz w szablonach zmian
+                        </p>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Niedziele handlowe */}
+            <Card>
+                <CardHeader>
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <ShoppingBag className="h-5 w-5" />
+                            <CardTitle>Niedziele handlowe</CardTitle>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Label
+                                htmlFor="enableTradingSundays"
+                                className="text-sm text-muted-foreground"
+                            >
+                                Uwzględniaj w grafiku
+                            </Label>
+                            <Switch
+                                id="enableTradingSundays"
+                                checked={enableTradingSundays}
+                                onCheckedChange={setEnableTradingSundays}
+                            />
+                        </div>
                     </div>
                     <CardDescription>
                         Ustawienia dotyczące niedziel pracujących w Twojej
                         organizacji
                     </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-6">
+                <CardContent
+                    className={cn(
+                        "space-y-6",
+                        !enableTradingSundays &&
+                            "opacity-50 pointer-events-none"
+                    )}
+                >
                     <div className="p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
                         <div className="flex items-start gap-2">
                             <Info className="h-5 w-5 text-blue-600 mt-0.5" />
@@ -359,63 +549,6 @@ export function OrganizationSettingsComponent({
                     )}
                 </CardContent>
             </Card>
-
-            <Card>
-                <CardHeader>
-                    <CardTitle>Domyślne ustawienia zmian</CardTitle>
-                    <CardDescription>
-                        Ustawienia stosowane przy tworzeniu nowych zmian
-                    </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="defaultShiftDuration">
-                                Domyślna długość zmiany (godziny)
-                            </Label>
-                            <Input
-                                id="defaultShiftDuration"
-                                type="number"
-                                min="1"
-                                max="24"
-                                value={defaultShiftDuration}
-                                onChange={(e) =>
-                                    setDefaultShiftDuration(
-                                        parseInt(e.target.value) || 8
-                                    )
-                                }
-                            />
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="defaultBreakMinutes">
-                                Domyślna przerwa (minuty)
-                            </Label>
-                            <Input
-                                id="defaultBreakMinutes"
-                                type="number"
-                                min="0"
-                                max="120"
-                                value={defaultBreakMinutes}
-                                onChange={(e) =>
-                                    setDefaultBreakMinutes(
-                                        parseInt(e.target.value) || 30
-                                    )
-                                }
-                            />
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-
-            <div className="flex justify-end">
-                <Button onClick={handleSave} disabled={isSaving}>
-                    {isSaving && (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    )}
-                    Zapisz ustawienia
-                </Button>
-            </div>
         </div>
     );
 }
