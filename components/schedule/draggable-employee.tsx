@@ -47,7 +47,7 @@ export function DraggableEmployee({
             {...listeners}
             {...attributes}
             className={cn(
-                "flex items-center gap-2 px-2 py-1.5 rounded-lg cursor-grab active:cursor-grabbing",
+                "flex items-center gap-1.5 sm:gap-2 px-1.5 sm:px-2 py-1 sm:py-1.5 rounded-lg cursor-grab active:cursor-grabbing",
                 "border shadow-sm",
                 "hover:shadow transition-all",
                 "select-none touch-none",
@@ -58,18 +58,18 @@ export function DraggableEmployee({
             )}
         >
             <div
-                className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0"
+                className="w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold text-white shrink-0"
                 style={{ backgroundColor: employeeColor }}
             >
                 {employee.first_name[0]}
                 {employee.last_name[0]}
             </div>
             <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-slate-900 truncate">
+                <p className="text-xs sm:text-sm font-medium text-slate-900 truncate">
                     {employee.first_name} {employee.last_name}
                 </p>
-                <div className="flex items-center gap-1.5">
-                    <div className="flex-1 h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                <div className="flex items-center gap-1 sm:gap-1.5">
+                    <div className="flex-1 h-1 sm:h-1.5 bg-slate-200 rounded-full overflow-hidden">
                         <div
                             className={cn(
                                 "h-full rounded-full transition-all",
@@ -80,7 +80,7 @@ export function DraggableEmployee({
                     </div>
                     <span
                         className={cn(
-                            "text-xs font-medium whitespace-nowrap",
+                            "text-[10px] sm:text-xs font-medium whitespace-nowrap",
                             isComplete ? "text-green-600" : "text-slate-500"
                         )}
                     >
@@ -109,7 +109,7 @@ export function EmployeeBadge({
         <div
             onClick={onClick}
             className={cn(
-                "group flex items-center gap-1 px-1.5 py-0.5 rounded cursor-pointer",
+                "group flex items-center gap-0.5 sm:gap-1 px-0.5 sm:px-1.5 py-0.5 rounded cursor-pointer",
                 "hover:ring-2 hover:ring-offset-1 transition-all"
             )}
             style={{
@@ -118,7 +118,7 @@ export function EmployeeBadge({
             }}
         >
             <div
-                className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0"
+                className="w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-[8px] sm:text-[10px] font-bold text-white shrink-0"
                 style={{ backgroundColor: employeeColor }}
             >
                 {employee.first_name[0]}
@@ -130,7 +130,7 @@ export function EmployeeBadge({
                         e.stopPropagation();
                         onRemove();
                     }}
-                    className="opacity-0 group-hover:opacity-100 w-4 h-4 flex items-center justify-center text-slate-400 hover:text-red-500 transition-opacity text-sm"
+                    className="opacity-0 group-hover:opacity-100 w-3 h-3 sm:w-4 sm:h-4 flex items-center justify-center text-slate-400 hover:text-red-500 transition-opacity text-xs sm:text-sm"
                 >
                     ×
                 </button>

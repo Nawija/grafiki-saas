@@ -8,6 +8,7 @@ import {
     DragOverlay,
     DragStartEvent,
     PointerSensor,
+    TouchSensor,
     useSensor,
     useSensors,
     pointerWithin,
@@ -148,11 +149,17 @@ export function ScheduleCalendarDnD({
         setMounted(true);
     }, []);
 
-    // Konfiguracja sensorów drag & drop
+    // Konfiguracja sensorów drag & drop (z obsługą touch dla mobile)
     const sensors = useSensors(
         useSensor(PointerSensor, {
             activationConstraint: {
                 distance: 8,
+            },
+        }),
+        useSensor(TouchSensor, {
+            activationConstraint: {
+                delay: 200,
+                tolerance: 5,
             },
         })
     );
@@ -471,20 +478,20 @@ export function ScheduleCalendarDnD({
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
         >
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
                 {/* Przycisk zapisz - na samej górze z animacją */}
                 <div
                     className={cn(
                         "overflow-hidden transition-all duration-300 ease-out",
                         hasUnsavedChanges
-                            ? "max-h-20 opacity-100"
+                            ? "max-h-24 opacity-100"
                             : "max-h-0 opacity-0"
                     )}
                 >
-                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-center justify-between">
+                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-2 sm:p-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                         <div className="flex items-center gap-2 text-amber-700">
                             <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-                            <span className="text-sm font-medium">
+                            <span className="text-xs sm:text-sm font-medium">
                                 Masz niezapisane zmiany
                             </span>
                         </div>
@@ -492,7 +499,7 @@ export function ScheduleCalendarDnD({
                             onClick={handleSaveAll}
                             disabled={isSaving}
                             size="sm"
-                            className="bg-amber-600 hover:bg-amber-700"
+                            className="bg-amber-600 hover:bg-amber-700 w-full sm:w-auto"
                         >
                             {isSaving ? (
                                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -505,18 +512,20 @@ export function ScheduleCalendarDnD({
                 </div>
 
                 {/* Sekcja pracowników - nad grafikiem */}
-                <div className="bg-white border border-slate-200 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-3">
-                        <h3 className="font-semibold text-slate-900 flex items-center gap-2">
+                <div className="bg-white border border-slate-200 rounded-lg p-3 sm:p-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                        <h3 className="font-semibold text-slate-900 flex items-center gap-2 text-sm sm:text-base">
                             <Users className="h-4 w-4" />
                             Pracownicy
                         </h3>
                         <span className="text-xs text-slate-500">
-                            Przeciągnij pracownika na zmianę •{" "}
+                            <span className="hidden sm:inline">
+                                Przeciągnij pracownika na zmianę •{" "}
+                            </span>
                             {employees.length} os.
                         </span>
                     </div>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
                         {employees.map((employee) => {
                             const hours = employeeHoursMap.get(employee.id) || {
                                 scheduled: 0,
@@ -535,20 +544,20 @@ export function ScheduleCalendarDnD({
                 </div>
 
                 {/* Główny kalendarz */}
-                <div className="overflow-x-auto">
-                    <div className="min-w-[900px]">
+                <div className="overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0">
+                    <div className="min-w-[800px] lg:min-w-0">
                         {/* Nagłówek z dniami */}
                         <div className="bg-white border border-slate-200 rounded-t-lg overflow-hidden">
                             {/* Wiersz z numerami dni */}
                             <div
                                 className="grid"
                                 style={{
-                                    gridTemplateColumns: `120px repeat(${daysInMonth.length}, minmax(40px, 1fr))`,
+                                    gridTemplateColumns: `80px repeat(${daysInMonth.length}, minmax(28px, 1fr))`,
                                 }}
                             >
-                                <div className="p-2 bg-slate-50 border-r border-b border-slate-200 flex items-center">
-                                    <Calendar className="h-4 w-4 mr-2 text-slate-500" />
-                                    <span className="font-medium text-sm text-slate-700">
+                                <div className="p-1 sm:p-2 bg-slate-50 border-r border-b border-slate-200 flex items-center">
+                                    
+                                    <span className="font-medium capitalize text-xs sm:text-sm text-slate-700 ">
                                         {format(
                                             new Date(year, month - 1),
                                             "LLLL yyyy",
@@ -575,19 +584,19 @@ export function ScheduleCalendarDnD({
                                         <div
                                             key={dateStr}
                                             className={cn(
-                                                "p-1 text-center border-r border-b border-slate-200",
+                                                "p-0.5 sm:p-1 text-center border-r border-b border-slate-200",
                                                 isWeekendDay &&
                                                     !isTradingSun &&
                                                     "bg-slate-100",
                                                 holiday && "bg-red-50"
                                             )}
                                         >
-                                            <div className="text-xs text-slate-500">
+                                            <div className="text-[10px] sm:text-xs text-slate-500">
                                                 {dayName}
                                             </div>
                                             <div
                                                 className={cn(
-                                                    "text-sm font-semibold",
+                                                    "text-xs sm:text-sm font-semibold",
                                                     isWeekendDay &&
                                                         !isTradingSun
                                                         ? "text-slate-400"
@@ -599,7 +608,7 @@ export function ScheduleCalendarDnD({
                                             </div>
                                             {holiday && (
                                                 <div
-                                                    className="text-[9px] text-red-500 truncate"
+                                                    className="text-[8px] sm:text-[9px] text-red-500 truncate hidden sm:block"
                                                     title={holiday.localName}
                                                 >
                                                     {holiday.localName}
@@ -612,9 +621,11 @@ export function ScheduleCalendarDnD({
 
                             {/* Wiersze ze zmianami */}
                             {sortedShiftTemplates.length === 0 ? (
-                                <div className="p-8 text-center text-slate-500">
-                                    <p>Brak szablonów zmian.</p>
-                                    <p className="text-sm">
+                                <div className="p-4 sm:p-8 text-center text-slate-500">
+                                    <p className="text-sm sm:text-base">
+                                        Brak szablonów zmian.
+                                    </p>
+                                    <p className="text-xs sm:text-sm">
                                         Dodaj szablony zmian w ustawieniach, aby
                                         móc planować grafik.
                                     </p>
@@ -625,28 +636,22 @@ export function ScheduleCalendarDnD({
                                         key={template.id}
                                         className="grid"
                                         style={{
-                                            gridTemplateColumns: `120px repeat(${daysInMonth.length}, minmax(40px, 1fr))`,
+                                            gridTemplateColumns: `80px repeat(${daysInMonth.length}, minmax(28px, 1fr))`,
                                         }}
                                     >
                                         {/* Nazwa zmiany */}
                                         <div
-                                            className="p-2 border-r border-b border-slate-200 flex items-center gap-2"
+                                            className="p-1 sm:p-2 border-r border-b border-slate-200 flex items-center gap-1 sm:gap-2"
                                             style={{
                                                 backgroundColor: `${template.color}15`,
                                             }}
                                         >
-                                            <div
-                                                className="w-3 h-3 rounded-full shrink-0"
-                                                style={{
-                                                    backgroundColor:
-                                                        template.color,
-                                                }}
-                                            />
+                                            
                                             <div className="min-w-0">
-                                                <div className="font-medium text-sm text-slate-900 truncate">
+                                                <div className="font-medium text-[10px] sm:text-sm text-slate-900 truncate">
                                                     {template.name}
                                                 </div>
-                                                <div className="text-xs text-slate-500">
+                                                <div className="text-[9px] sm:text-[11px] text-slate-900">
                                                     {template.start_time.slice(
                                                         0,
                                                         5
@@ -708,11 +713,14 @@ export function ScheduleCalendarDnD({
                             <div
                                 className="grid"
                                 style={{
-                                    gridTemplateColumns: `120px repeat(${daysInMonth.length}, minmax(40px, 1fr))`,
+                                    gridTemplateColumns: `80px repeat(${daysInMonth.length}, minmax(28px, 1fr))`,
                                 }}
                             >
-                                <div className="p-2 text-xs font-medium text-slate-600">
-                                    Razem pracowników
+                                <div className="p-1 sm:p-2 text-[9px] sm:text-xs font-medium text-slate-600">
+                                    <span className="hidden sm:inline">
+                                        Razem pracowników
+                                    </span>
+                                    <span className="sm:hidden">Suma</span>
                                 </div>
                                 {daysInMonth.map((day) => {
                                     const dateStr = format(day, "yyyy-MM-dd");
@@ -723,7 +731,7 @@ export function ScheduleCalendarDnD({
                                         <div
                                             key={dateStr}
                                             className={cn(
-                                                "p-2 text-center text-xs font-semibold",
+                                                "p-1 sm:p-2 text-center text-[10px] sm:text-xs font-semibold",
                                                 count === 0
                                                     ? "text-slate-300"
                                                     : count < 2

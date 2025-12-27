@@ -69,149 +69,107 @@ export function EmployeesList({
         <>
             {/* Widok mobilny - karty */}
             <div className="grid gap-3 sm:hidden">
-                {employees.map((employee) => (
-                    <Card key={employee.id}>
-                        <CardContent className="p-4">
-                            <div className="flex items-start justify-between">
-                                <div>
-                                    <div className="font-medium">
-                                        {employee.first_name}{" "}
-                                        {employee.last_name}
-                                    </div>
-                                    <div className="text-sm text-muted-foreground">
-                                        {getEmploymentTypeLabel(
-                                            employee.employment_type
-                                        )}
-                                        {employee.employment_type ===
-                                            "custom" &&
-                                            employee.custom_hours && (
-                                                <span className="ml-1">
-                                                    ({employee.custom_hours}
-                                                    h/dzień)
-                                                </span>
-                                            )}
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() =>
-                                            setPreferencesEmployee(employee)
-                                        }
-                                        className="h-7 text-xs"
-                                    >
-                                        <Settings2 className="mr-1 h-3 w-3" />
-                                        Preferencje
-                                    </Button>
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="h-8 w-8"
-                                            >
-                                                <MoreHorizontal className="h-4 w-4" />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end">
-                                            <DropdownMenuItem
-                                                onClick={() =>
-                                                    setEditingEmployee(employee)
-                                                }
-                                            >
-                                                <Pencil className="mr-2 h-4 w-4" />
-                                                Edytuj
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem
-                                                onClick={() =>
-                                                    setPreferencesEmployee(
-                                                        employee
-                                                    )
-                                                }
-                                            >
-                                                <Settings2 className="mr-2 h-4 w-4" />
-                                                Preferencje
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem
-                                                onClick={() =>
-                                                    setDeletingEmployee(
-                                                        employee
-                                                    )
-                                                }
-                                                className="text-red-600"
-                                            >
-                                                <Trash2 className="mr-2 h-4 w-4" />
-                                                Usuń
-                                            </DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </div>
-                            </div>
-                            {(employee.email || employee.phone) && (
-                                <div className="mt-3 pt-3 border-t flex flex-col gap-1">
-                                    {employee.email && (
-                                        <a
-                                            href={`mailto:${employee.email}`}
-                                            className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+                {employees.map((employee) => {
+                    const employeeColor =
+                        (employee as Employee & { color?: string }).color ||
+                        "#3b82f6";
+                    return (
+                        <Card key={employee.id}>
+                            <CardContent className="p-4">
+                                <div className="flex items-start justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div
+                                            className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0"
+                                            style={{
+                                                backgroundColor: employeeColor,
+                                            }}
                                         >
-                                            <Mail className="h-3 w-3" />
-                                            {employee.email}
-                                        </a>
-                                    )}
-                                    {employee.phone && (
-                                        <a
-                                            href={`tel:${employee.phone}`}
-                                            className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-                                        >
-                                            <Phone className="h-3 w-3" />
-                                            {employee.phone}
-                                        </a>
-                                    )}
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
-                ))}
-            </div>
-
-            {/* Widok desktop - tabela */}
-            <Card className="hidden sm:block">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Imię i nazwisko</TableHead>
-                            <TableHead>Etat</TableHead>
-                            <TableHead className="hidden md:table-cell">
-                                Kontakt
-                            </TableHead>
-                            <TableHead>Ustawienia</TableHead>
-                            <TableHead className="w-12"></TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {employees.map((employee) => (
-                            <TableRow key={employee.id}>
-                                <TableCell className="font-medium">
-                                    {employee.first_name} {employee.last_name}
-                                </TableCell>
-                                <TableCell>
-                                    <div>
-                                        {getEmploymentTypeLabel(
-                                            employee.employment_type
-                                        )}
-                                        {employee.employment_type ===
-                                            "custom" &&
-                                            employee.custom_hours && (
-                                                <span className="text-muted-foreground ml-1">
-                                                    ({employee.custom_hours}
-                                                    h/dzień)
-                                                </span>
-                                            )}
+                                            {employee.first_name[0]}
+                                            {employee.last_name[0]}
+                                        </div>
+                                        <div>
+                                            <div className="font-medium">
+                                                {employee.first_name}{" "}
+                                                {employee.last_name}
+                                            </div>
+                                            <div className="text-sm text-muted-foreground">
+                                                {getEmploymentTypeLabel(
+                                                    employee.employment_type
+                                                )}
+                                                {employee.employment_type ===
+                                                    "custom" &&
+                                                    employee.custom_hours && (
+                                                        <span className="ml-1">
+                                                            (
+                                                            {
+                                                                employee.custom_hours
+                                                            }
+                                                            h/dzień)
+                                                        </span>
+                                                    )}
+                                            </div>
+                                        </div>
                                     </div>
-                                </TableCell>
-                                <TableCell className="hidden md:table-cell">
-                                    <div className="flex flex-col gap-1">
+                                    <div className="flex items-center gap-2">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() =>
+                                                setPreferencesEmployee(employee)
+                                            }
+                                            className="h-7 text-xs"
+                                        >
+                                            <Settings2 className="mr-1 h-3 w-3" />
+                                            Preferencje
+                                        </Button>
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8"
+                                                >
+                                                    <MoreHorizontal className="h-4 w-4" />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end">
+                                                <DropdownMenuItem
+                                                    onClick={() =>
+                                                        setEditingEmployee(
+                                                            employee
+                                                        )
+                                                    }
+                                                >
+                                                    <Pencil className="mr-2 h-4 w-4" />
+                                                    Edytuj
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem
+                                                    onClick={() =>
+                                                        setPreferencesEmployee(
+                                                            employee
+                                                        )
+                                                    }
+                                                >
+                                                    <Settings2 className="mr-2 h-4 w-4" />
+                                                    Preferencje
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem
+                                                    onClick={() =>
+                                                        setDeletingEmployee(
+                                                            employee
+                                                        )
+                                                    }
+                                                    className="text-red-600"
+                                                >
+                                                    <Trash2 className="mr-2 h-4 w-4" />
+                                                    Usuń
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </div>
+                                </div>
+                                {(employee.email || employee.phone) && (
+                                    <div className="mt-3 pt-3 border-t flex flex-col gap-1">
                                         {employee.email && (
                                             <a
                                                 href={`mailto:${employee.email}`}
@@ -231,51 +189,139 @@ export function EmployeesList({
                                             </a>
                                         )}
                                     </div>
-                                </TableCell>
-                                <TableCell>
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() =>
-                                            setPreferencesEmployee(employee)
-                                        }
-                                    >
-                                        <Settings2 className="mr-2 h-4 w-4" />
-                                        Preferencje
-                                    </Button>
-                                </TableCell>
-                                <TableCell>
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" size="icon">
-                                                <MoreHorizontal className="h-4 w-4" />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end">
-                                            <DropdownMenuItem
-                                                onClick={() =>
-                                                    setEditingEmployee(employee)
-                                                }
+                                )}
+                            </CardContent>
+                        </Card>
+                    );
+                })}
+            </div>
+
+            {/* Widok desktop - tabela */}
+            <Card className="hidden sm:block">
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Imię i nazwisko</TableHead>
+                            <TableHead>Etat</TableHead>
+                            <TableHead className="hidden md:table-cell">
+                                Kontakt
+                            </TableHead>
+                            <TableHead>Ustawienia</TableHead>
+                            <TableHead className="w-12"></TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {employees.map((employee) => {
+                            const employeeColor =
+                                (employee as Employee & { color?: string })
+                                    .color || "#3b82f6";
+                            return (
+                                <TableRow key={employee.id}>
+                                    <TableCell className="font-medium">
+                                        <div className="flex items-center gap-3">
+                                            <div
+                                                className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0"
+                                                style={{
+                                                    backgroundColor:
+                                                        employeeColor,
+                                                }}
                                             >
-                                                <Pencil className="mr-2 h-4 w-4" />
-                                                Edytuj
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem
-                                                onClick={() =>
-                                                    setDeletingEmployee(
-                                                        employee
-                                                    )
-                                                }
-                                                className="text-red-600"
-                                            >
-                                                <Trash2 className="mr-2 h-4 w-4" />
-                                                Usuń
-                                            </DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </TableCell>
-                            </TableRow>
-                        ))}
+                                                {employee.first_name[0]}
+                                                {employee.last_name[0]}
+                                            </div>
+                                            <span>
+                                                {employee.first_name}{" "}
+                                                {employee.last_name}
+                                            </span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div>
+                                            {getEmploymentTypeLabel(
+                                                employee.employment_type
+                                            )}
+                                            {employee.employment_type ===
+                                                "custom" &&
+                                                employee.custom_hours && (
+                                                    <span className="text-muted-foreground ml-1">
+                                                        ({employee.custom_hours}
+                                                        h/dzień)
+                                                    </span>
+                                                )}
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="hidden md:table-cell">
+                                        <div className="flex flex-col gap-1">
+                                            {employee.email && (
+                                                <a
+                                                    href={`mailto:${employee.email}`}
+                                                    className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+                                                >
+                                                    <Mail className="h-3 w-3" />
+                                                    {employee.email}
+                                                </a>
+                                            )}
+                                            {employee.phone && (
+                                                <a
+                                                    href={`tel:${employee.phone}`}
+                                                    className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+                                                >
+                                                    <Phone className="h-3 w-3" />
+                                                    {employee.phone}
+                                                </a>
+                                            )}
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() =>
+                                                setPreferencesEmployee(employee)
+                                            }
+                                        >
+                                            <Settings2 className="mr-2 h-4 w-4" />
+                                            Preferencje
+                                        </Button>
+                                    </TableCell>
+                                    <TableCell>
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                >
+                                                    <MoreHorizontal className="h-4 w-4" />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end">
+                                                <DropdownMenuItem
+                                                    onClick={() =>
+                                                        setEditingEmployee(
+                                                            employee
+                                                        )
+                                                    }
+                                                >
+                                                    <Pencil className="mr-2 h-4 w-4" />
+                                                    Edytuj
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem
+                                                    onClick={() =>
+                                                        setDeletingEmployee(
+                                                            employee
+                                                        )
+                                                    }
+                                                    className="text-red-600"
+                                                >
+                                                    <Trash2 className="mr-2 h-4 w-4" />
+                                                    Usuń
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </TableCell>
+                                </TableRow>
+                            );
+                        })}
                     </TableBody>
                 </Table>
             </Card>
