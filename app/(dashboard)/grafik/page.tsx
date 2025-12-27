@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { format } from "date-fns";
 import { pl } from "date-fns/locale";
-import { ScheduleCalendar } from "@/components/schedule/schedule-calendar-local";
+import { ScheduleCalendarDnD } from "@/components/schedule/schedule-calendar-dnd";
 import { MonthSelector } from "@/components/schedule/month-selector";
 import { ShiftTemplatesManager } from "@/components/schedule/shift-templates-manager";
 import { ClearScheduleButton } from "@/components/schedule/clear-schedule-button";
@@ -196,7 +196,7 @@ export default async function SchedulePage({
                 </div>
             </div>
 
-            <ScheduleCalendar
+            <ScheduleCalendarDnD
                 year={year}
                 month={month}
                 holidays={holidays}
