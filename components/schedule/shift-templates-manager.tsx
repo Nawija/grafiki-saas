@@ -21,7 +21,15 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Plus, Settings, Trash2, Loader2, Clock, Users, Pencil } from "lucide-react";
+import {
+    Plus,
+    Settings,
+    Trash2,
+    Loader2,
+    Clock,
+    Users,
+    Pencil,
+} from "lucide-react";
 import { toast } from "sonner";
 
 interface ShiftTemplatesManagerProps {
@@ -45,7 +53,8 @@ export function ShiftTemplatesManager({
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
     const [dialogOpen, setDialogOpen] = useState(false);
-    const [editingTemplate, setEditingTemplate] = useState<ShiftTemplate | null>(null);
+    const [editingTemplate, setEditingTemplate] =
+        useState<ShiftTemplate | null>(null);
     const [deletingId, setDeletingId] = useState<string | null>(null);
     const [formData, setFormData] = useState(defaultFormData);
 
@@ -184,13 +193,15 @@ export function ShiftTemplatesManager({
                                     className="flex items-center justify-between p-2"
                                     onSelect={(e) => e.preventDefault()}
                                 >
-                                    <div 
+                                    <div
                                         className="flex items-center gap-2 flex-1 cursor-pointer"
                                         onClick={() => openEditDialog(template)}
                                     >
                                         <div
                                             className="w-4 h-4 rounded-full flex-shrink-0"
-                                            style={{ backgroundColor: template.color }}
+                                            style={{
+                                                backgroundColor: template.color,
+                                            }}
                                         />
                                         <div className="min-w-0 flex-1">
                                             <div className="font-medium text-sm truncate">
@@ -198,12 +209,22 @@ export function ShiftTemplatesManager({
                                             </div>
                                             <div className="text-xs text-muted-foreground flex items-center gap-2">
                                                 <span>
-                                                    {template.start_time.substring(0, 5)} - {template.end_time.substring(0, 5)}
+                                                    {template.start_time.substring(
+                                                        0,
+                                                        5
+                                                    )}{" "}
+                                                    -{" "}
+                                                    {template.end_time.substring(
+                                                        0,
+                                                        5
+                                                    )}
                                                 </span>
                                                 <span>•</span>
                                                 <span className="flex items-center gap-0.5">
                                                     <Users className="h-3 w-3" />
-                                                    {template.min_employees || 1} os.
+                                                    {template.min_employees ||
+                                                        1}{" "}
+                                                    os.
                                                 </span>
                                             </div>
                                         </div>
@@ -213,7 +234,9 @@ export function ShiftTemplatesManager({
                                             variant="ghost"
                                             size="icon"
                                             className="h-7 w-7"
-                                            onClick={() => openEditDialog(template)}
+                                            onClick={() =>
+                                                openEditDialog(template)
+                                            }
                                         >
                                             <Pencil className="h-3 w-3" />
                                         </Button>
@@ -221,8 +244,12 @@ export function ShiftTemplatesManager({
                                             variant="ghost"
                                             size="icon"
                                             className="h-7 w-7"
-                                            onClick={() => handleDelete(template.id)}
-                                            disabled={deletingId === template.id}
+                                            onClick={() =>
+                                                handleDelete(template.id)
+                                            }
+                                            disabled={
+                                                deletingId === template.id
+                                            }
                                         >
                                             {deletingId === template.id ? (
                                                 <Loader2 className="h-3 w-3 animate-spin" />
@@ -241,10 +268,12 @@ export function ShiftTemplatesManager({
                         </div>
                     )}
 
-                    <DropdownMenuItem onSelect={(e) => {
-                        e.preventDefault();
-                        openCreateDialog();
-                    }}>
+                    <DropdownMenuItem
+                        onSelect={(e) => {
+                            e.preventDefault();
+                            openCreateDialog();
+                        }}
+                    >
                         <Plus className="mr-2 h-4 w-4" />
                         Dodaj szablon
                     </DropdownMenuItem>
@@ -256,11 +285,13 @@ export function ShiftTemplatesManager({
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>
-                            {editingTemplate ? "Edytuj szablon zmiany" : "Nowy szablon zmiany"}
+                            {editingTemplate
+                                ? "Edytuj szablon zmiany"
+                                : "Nowy szablon zmiany"}
                         </DialogTitle>
                         <DialogDescription>
-                            {editingTemplate 
-                                ? "Zmień parametry szablonu zmiany" 
+                            {editingTemplate
+                                ? "Zmień parametry szablonu zmiany"
                                 : "Szablon ułatwi szybkie dodawanie zmian"}
                         </DialogDescription>
                     </DialogHeader>
@@ -271,11 +302,14 @@ export function ShiftTemplatesManager({
                                 placeholder="np. Poranna, Popołudniowa, Nocna"
                                 value={formData.name}
                                 onChange={(e) =>
-                                    setFormData({ ...formData, name: e.target.value })
+                                    setFormData({
+                                        ...formData,
+                                        name: e.target.value,
+                                    })
                                 }
                             />
                         </div>
-                        
+
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label>Godzina rozpoczęcia</Label>
@@ -283,7 +317,10 @@ export function ShiftTemplatesManager({
                                     type="time"
                                     value={formData.startTime}
                                     onChange={(e) =>
-                                        setFormData({ ...formData, startTime: e.target.value })
+                                        setFormData({
+                                            ...formData,
+                                            startTime: e.target.value,
+                                        })
                                     }
                                 />
                             </div>
@@ -293,12 +330,15 @@ export function ShiftTemplatesManager({
                                     type="time"
                                     value={formData.endTime}
                                     onChange={(e) =>
-                                        setFormData({ ...formData, endTime: e.target.value })
+                                        setFormData({
+                                            ...formData,
+                                            endTime: e.target.value,
+                                        })
                                     }
                                 />
                             </div>
                         </div>
-                        
+
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label>Przerwa (minuty)</Label>
@@ -310,7 +350,8 @@ export function ShiftTemplatesManager({
                                     onChange={(e) =>
                                         setFormData({
                                             ...formData,
-                                            breakMinutes: parseInt(e.target.value) || 0,
+                                            breakMinutes:
+                                                parseInt(e.target.value) || 0,
                                         })
                                     }
                                 />
@@ -328,13 +369,14 @@ export function ShiftTemplatesManager({
                                     onChange={(e) =>
                                         setFormData({
                                             ...formData,
-                                            minEmployees: parseInt(e.target.value) || 1,
+                                            minEmployees:
+                                                parseInt(e.target.value) || 1,
                                         })
                                     }
                                 />
                             </div>
                         </div>
-                        
+
                         <div className="space-y-2">
                             <Label>Kolor</Label>
                             <div className="flex gap-2 flex-wrap">
@@ -348,37 +390,56 @@ export function ShiftTemplatesManager({
                                                 : "border-transparent"
                                         }`}
                                         style={{ backgroundColor: color }}
-                                        onClick={() => setFormData({ ...formData, color })}
+                                        onClick={() =>
+                                            setFormData({ ...formData, color })
+                                        }
                                     />
                                 ))}
                             </div>
                         </div>
-                        
+
                         {/* Podsumowanie */}
                         <div className="bg-muted p-3 rounded-lg space-y-1">
                             <div className="flex items-center gap-2 text-sm">
                                 <Clock className="h-4 w-4 text-muted-foreground" />
-                                <span className="text-muted-foreground">Czas pracy:</span>
+                                <span className="text-muted-foreground">
+                                    Czas pracy:
+                                </span>
                                 <span className="font-medium">
-                                    {calculateHours(formData.startTime, formData.endTime, formData.breakMinutes)}
+                                    {calculateHours(
+                                        formData.startTime,
+                                        formData.endTime,
+                                        formData.breakMinutes
+                                    )}
                                 </span>
                             </div>
                             <div className="flex items-center gap-2 text-sm">
                                 <Users className="h-4 w-4 text-muted-foreground" />
-                                <span className="text-muted-foreground">Wymagane osoby:</span>
+                                <span className="text-muted-foreground">
+                                    Wymagane osoby:
+                                </span>
                                 <span className="font-medium">
-                                    {formData.minEmployees} {formData.minEmployees === 1 ? "osoba" : formData.minEmployees < 5 ? "osoby" : "osób"}
+                                    {formData.minEmployees}{" "}
+                                    {formData.minEmployees === 1
+                                        ? "osoba"
+                                        : formData.minEmployees < 5
+                                        ? "osoby"
+                                        : "osób"}
                                 </span>
                             </div>
                         </div>
-                        
+
                         <Button
                             onClick={handleSave}
                             disabled={isLoading || !formData.name.trim()}
                             className="w-full"
                         >
-                            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            {editingTemplate ? "Zapisz zmiany" : "Utwórz szablon"}
+                            {isLoading && (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            )}
+                            {editingTemplate
+                                ? "Zapisz zmiany"
+                                : "Utwórz szablon"}
                         </Button>
                     </div>
                 </DialogContent>
