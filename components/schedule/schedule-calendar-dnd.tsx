@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
+import { createPortal } from "react-dom";
 import {
     DndContext,
     DragEndEvent,
@@ -25,6 +26,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Save, Loader2, Users, Calendar } from "lucide-react";
+import { getRequiredHours, calculateWorkedHours } from "@/lib/utils/work-hours";
 
 import { DraggableEmployee } from "./draggable-employee";
 import { DroppableShiftCell } from "./droppable-shift-cell";
@@ -137,6 +139,12 @@ export function ScheduleCalendarDnD({
     const [isSaving, setIsSaving] = useState(false);
     const [activeEmployee, setActiveEmployee] = useState<Employee | null>(null);
     const [editingShift, setEditingShift] = useState<LocalShift | null>(null);
+    const [mounted, setMounted] = useState(false);
+
+    // Dla portal - potrzebne do renderowania overlay poza kontenerem
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     // Konfiguracja sensorów drag & drop
     const sensors = useSensors(
@@ -146,6 +154,13 @@ export function ScheduleCalendarDnD({
             },
         })
     );
+
+    // Sortuj szablony po godzinie startu (poranne na górze, wieczorne na dole)
+    const sortedShiftTemplates = useMemo(() => {
+        return [...shiftTemplates].sort((a, b) => {
+            return a.start_time.localeCompare(b.start_time);
+        });
+    }, [shiftTemplates]);
 
     // Generuj dni miesiąca
     const daysInMonth = useMemo(() => {
@@ -172,6 +187,32 @@ export function ScheduleCalendarDnD({
         () => localShifts.some((s) => s.status !== "unchanged"),
         [localShifts]
     );
+
+    // Oblicz godziny dla każdego pracownika
+    const employeeHoursMap = useMemo(() => {
+        const map = new Map<string, { scheduled: number; required: number }>();
+
+        employees.forEach((emp) => {
+            // Wymagane godziny na podstawie typu etatu
+            const required = getRequiredHours(
+                year,
+                month,
+                holidays,
+                emp.employment_type,
+                emp.custom_hours || undefined
+            );
+
+            // Rozpisane godziny z aktywnych zmian
+            const employeeShifts = activeShifts.filter(
+                (s) => s.employee_id === emp.id
+            );
+            const scheduled = calculateWorkedHours(employeeShifts);
+
+            map.set(emp.id, { scheduled, required });
+        });
+
+        return map;
+    }, [employees, activeShifts, year, month, holidays]);
 
     // Rozpoczęcie przeciągania
     const handleDragStart = useCallback((event: DragStartEvent) => {
@@ -368,51 +409,71 @@ export function ScheduleCalendarDnD({
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
         >
-            <div className="flex flex-col lg:flex-row gap-4">
-                {/* Sidebar z pracownikami */}
-                <div className="lg:w-64 shrink-0">
-                    <div className="sticky top-4 space-y-4">
-                        {/* Nagłówek */}
-                        <div className="flex items-center justify-between">
-                            <h3 className="font-semibold text-slate-900 flex items-center gap-2">
-                                <Users className="h-4 w-4" />
-                                Pracownicy
-                            </h3>
-                            <span className="text-xs text-slate-500">
-                                {employees.length} os.
+            <div className="space-y-4">
+                {/* Przycisk zapisz - na samej górze z animacją */}
+                <div
+                    className={cn(
+                        "overflow-hidden transition-all duration-300 ease-out",
+                        hasUnsavedChanges
+                            ? "max-h-20 opacity-100"
+                            : "max-h-0 opacity-0"
+                    )}
+                >
+                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-amber-700">
+                            <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                            <span className="text-sm font-medium">
+                                Masz niezapisane zmiany
                             </span>
                         </div>
+                        <Button
+                            onClick={handleSaveAll}
+                            disabled={isSaving}
+                            size="sm"
+                            className="bg-amber-600 hover:bg-amber-700"
+                        >
+                            {isSaving ? (
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            ) : (
+                                <Save className="h-4 w-4 mr-2" />
+                            )}
+                            Zapisz grafik
+                        </Button>
+                    </div>
+                </div>
 
-                        {/* Lista pracowników */}
-                        <div className="space-y-2 max-h-[calc(100vh-200px)] overflow-y-auto pr-2">
-                            {employees.map((employee) => (
+                {/* Sekcja pracowników - nad grafikiem */}
+                <div className="bg-white border border-slate-200 rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-3">
+                        <h3 className="font-semibold text-slate-900 flex items-center gap-2">
+                            <Users className="h-4 w-4" />
+                            Pracownicy
+                        </h3>
+                        <span className="text-xs text-slate-500">
+                            Przeciągnij pracownika na zmianę •{" "}
+                            {employees.length} os.
+                        </span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                        {employees.map((employee) => {
+                            const hours = employeeHoursMap.get(employee.id) || {
+                                scheduled: 0,
+                                required: 0,
+                            };
+                            return (
                                 <DraggableEmployee
                                     key={employee.id}
                                     employee={employee}
+                                    scheduledHours={hours.scheduled}
+                                    requiredHours={hours.required}
                                 />
-                            ))}
-                        </div>
-
-                        {/* Przycisk zapisz */}
-                        {hasUnsavedChanges && (
-                            <Button
-                                onClick={handleSaveAll}
-                                disabled={isSaving}
-                                className="w-full"
-                            >
-                                {isSaving ? (
-                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                ) : (
-                                    <Save className="h-4 w-4 mr-2" />
-                                )}
-                                Zapisz grafik
-                            </Button>
-                        )}
+                            );
+                        })}
                     </div>
                 </div>
 
                 {/* Główny kalendarz */}
-                <div className="flex-1 overflow-x-auto">
+                <div className="overflow-x-auto">
                     <div className="min-w-[900px]">
                         {/* Nagłówek z dniami */}
                         <div className="bg-white border border-slate-200 rounded-t-lg overflow-hidden">
@@ -488,7 +549,7 @@ export function ScheduleCalendarDnD({
                             </div>
 
                             {/* Wiersze ze zmianami */}
-                            {shiftTemplates.length === 0 ? (
+                            {sortedShiftTemplates.length === 0 ? (
                                 <div className="p-8 text-center text-slate-500">
                                     <p>Brak szablonów zmian.</p>
                                     <p className="text-sm">
@@ -497,7 +558,7 @@ export function ScheduleCalendarDnD({
                                     </p>
                                 </div>
                             ) : (
-                                shiftTemplates.map((template) => (
+                                sortedShiftTemplates.map((template) => (
                                     <div
                                         key={template.id}
                                         className="grid"
@@ -618,21 +679,45 @@ export function ScheduleCalendarDnD({
                 </div>
             </div>
 
-            {/* Overlay podczas przeciągania */}
-            <DragOverlay>
-                {activeEmployee && (
-                    <div className="bg-white border border-blue-400 shadow-lg rounded-lg px-3 py-2 flex items-center gap-2 opacity-90">
-                        <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-medium">
-                            {activeEmployee.first_name[0]}
-                            {activeEmployee.last_name[0]}
-                        </div>
-                        <span className="font-medium text-sm">
-                            {activeEmployee.first_name}{" "}
-                            {activeEmployee.last_name}
-                        </span>
-                    </div>
+            {/* Overlay podczas przeciągania - renderowany przez portal na body */}
+            {mounted &&
+                createPortal(
+                    <DragOverlay dropAnimation={null}>
+                        {activeEmployee && (
+                            <div
+                                className="bg-white border-2 shadow-xl rounded-lg px-3 py-2 flex items-center gap-2 pointer-events-none"
+                                style={{
+                                    borderColor:
+                                        (
+                                            activeEmployee as Employee & {
+                                                color?: string;
+                                            }
+                                        ).color || "#3b82f6",
+                                }}
+                            >
+                                <div
+                                    className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white"
+                                    style={{
+                                        backgroundColor:
+                                            (
+                                                activeEmployee as Employee & {
+                                                    color?: string;
+                                                }
+                                            ).color || "#3b82f6",
+                                    }}
+                                >
+                                    {activeEmployee.first_name[0]}
+                                    {activeEmployee.last_name[0]}
+                                </div>
+                                <span className="font-medium text-sm text-slate-900">
+                                    {activeEmployee.first_name}{" "}
+                                    {activeEmployee.last_name}
+                                </span>
+                            </div>
+                        )}
+                    </DragOverlay>,
+                    document.body
                 )}
-            </DragOverlay>
 
             {/* Dialog edycji zmiany */}
             {editingShift && (

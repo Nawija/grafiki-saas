@@ -3,17 +3,18 @@
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { cn } from "@/lib/utils";
-import { User } from "lucide-react";
 import type { Employee } from "@/types";
 
 interface DraggableEmployeeProps {
     employee: Employee;
-    isAssignedToday?: boolean;
+    scheduledHours: number;
+    requiredHours: number;
 }
 
 export function DraggableEmployee({
     employee,
-    isAssignedToday = false,
+    scheduledHours,
+    requiredHours,
 }: DraggableEmployeeProps) {
     const { attributes, listeners, setNodeRef, transform, isDragging } =
         useDraggable({
@@ -23,6 +24,14 @@ export function DraggableEmployee({
                 employee,
             },
         });
+
+    const employeeColor =
+        (employee as Employee & { color?: string }).color || "#3b82f6";
+    const isComplete = scheduledHours >= requiredHours && requiredHours > 0;
+    const progress =
+        requiredHours > 0
+            ? Math.min((scheduledHours / requiredHours) * 100, 100)
+            : 0;
 
     const style = transform
         ? {
@@ -39,18 +48,18 @@ export function DraggableEmployee({
             {...attributes}
             className={cn(
                 "flex items-center gap-2 px-3 py-2 rounded-lg cursor-grab active:cursor-grabbing",
-                "bg-white border border-slate-200 shadow-sm",
-                "hover:border-slate-300 hover:shadow transition-all",
+                "border shadow-sm",
+                "hover:shadow transition-all",
                 "select-none touch-none",
-                isDragging && "opacity-50 shadow-lg border-blue-400",
-                isAssignedToday && "bg-green-50 border-green-200"
+                isDragging && "opacity-50 shadow-lg",
+                isComplete
+                    ? "bg-green-50 border-green-300 hover:border-green-400"
+                    : "bg-white border-slate-200 hover:border-slate-300"
             )}
         >
             <div
-                className={cn(
-                    "w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium",
-                    "bg-slate-100 text-slate-600"
-                )}
+                className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0"
+                style={{ backgroundColor: employeeColor }}
             >
                 {employee.first_name[0]}
                 {employee.last_name[0]}
@@ -59,13 +68,25 @@ export function DraggableEmployee({
                 <p className="text-sm font-medium text-slate-900 truncate">
                     {employee.first_name} {employee.last_name}
                 </p>
-                <p className="text-xs text-slate-500">
-                    {employee.employment_type === "full"
-                        ? "Pełny etat"
-                        : employee.employment_type === "half"
-                        ? "Pół etatu"
-                        : `${employee.custom_hours}h/mies.`}
-                </p>
+                <div className="flex items-center gap-1.5">
+                    <div className="flex-1 h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                        <div
+                            className={cn(
+                                "h-full rounded-full transition-all",
+                                isComplete ? "bg-green-500" : "bg-blue-500"
+                            )}
+                            style={{ width: `${progress}%` }}
+                        />
+                    </div>
+                    <span
+                        className={cn(
+                            "text-xs font-medium whitespace-nowrap",
+                            isComplete ? "text-green-600" : "text-slate-500"
+                        )}
+                    >
+                        {Math.round(scheduledHours)}/{requiredHours}h
+                    </span>
+                </div>
             </div>
         </div>
     );
@@ -76,36 +97,40 @@ export function EmployeeBadge({
     employee,
     onRemove,
     onClick,
-    color,
 }: {
     employee: Employee;
     onRemove?: () => void;
     onClick?: () => void;
-    color?: string;
 }) {
+    const employeeColor =
+        (employee as Employee & { color?: string }).color || "#3b82f6";
+
     return (
         <div
             onClick={onClick}
             className={cn(
-                "group flex items-center gap-1.5 px-2 py-1 rounded text-xs",
-                "bg-white border shadow-sm cursor-pointer",
-                "hover:shadow transition-shadow"
+                "group flex items-center gap-1 px-1.5 py-0.5 rounded cursor-pointer",
+                "hover:ring-2 hover:ring-offset-1 transition-all"
             )}
             style={{
-                borderColor: color || "#e2e8f0",
-                backgroundColor: color ? `${color}15` : undefined,
+                backgroundColor: `${employeeColor}20`,
+                borderColor: employeeColor,
             }}
         >
-            <span className="font-medium truncate">
-                {employee.first_name} {employee.last_name[0]}.
-            </span>
+            <div
+                className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0"
+                style={{ backgroundColor: employeeColor }}
+            >
+                {employee.first_name[0]}
+                {employee.last_name[0]}
+            </div>
             {onRemove && (
                 <button
                     onClick={(e) => {
                         e.stopPropagation();
                         onRemove();
                     }}
-                    className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-500 transition-opacity"
+                    className="opacity-0 group-hover:opacity-100 w-4 h-4 flex items-center justify-center text-slate-400 hover:text-red-500 transition-opacity text-sm"
                 >
                     ×
                 </button>
