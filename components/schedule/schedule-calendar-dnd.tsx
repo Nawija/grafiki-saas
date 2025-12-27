@@ -10,7 +10,9 @@ import {
     PointerSensor,
     useSensor,
     useSensors,
+    pointerWithin,
 } from "@dnd-kit/core";
+import { snapCenterToCursor } from "@dnd-kit/modifiers";
 import {
     format,
     startOfMonth,
@@ -406,6 +408,7 @@ export function ScheduleCalendarDnD({
     return (
         <DndContext
             sensors={sensors}
+            collisionDetection={pointerWithin}
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
         >
@@ -682,7 +685,10 @@ export function ScheduleCalendarDnD({
             {/* Overlay podczas przeciągania - renderowany przez portal na body */}
             {mounted &&
                 createPortal(
-                    <DragOverlay dropAnimation={null}>
+                    <DragOverlay
+                        dropAnimation={null}
+                        modifiers={[snapCenterToCursor]}
+                    >
                         {activeEmployee && (
                             <div
                                 className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white shadow-xl pointer-events-none"
