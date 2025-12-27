@@ -70,6 +70,7 @@ export function DroppableShiftCell({
                         <EmployeeBadge
                             key={shift.id}
                             employee={employee}
+                            shift={shift}
                             onRemove={() => onRemoveShift(shift.id)}
                             onClick={() => onEditShift(shift)}
                         />

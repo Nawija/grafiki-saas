@@ -3,7 +3,9 @@
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { cn } from "@/lib/utils";
+import { X } from "lucide-react";
 import type { Employee } from "@/types";
+import type { LocalShift } from "./schedule-calendar-dnd";
 
 interface DraggableEmployeeProps {
     employee: Employee;
@@ -51,7 +53,7 @@ export function DraggableEmployee({
                 "border shadow-sm",
                 "hover:shadow transition-all",
                 "select-none touch-none",
-                isDragging && "opacity-0",
+                isDragging && "invisible",
                 isComplete
                     ? "bg-green-50 border-green-300 hover:border-green-400"
                     : "bg-white border-slate-200 hover:border-slate-300"
@@ -92,30 +94,57 @@ export function DraggableEmployee({
     );
 }
 
-// Mniejsza wersja do wyświetlania w komórkach grafiku
+// Mniejsza wersja do wyświetlania w komórkach grafiku - DRAGGABLE
 export function EmployeeBadge({
     employee,
+    shift,
     onRemove,
     onClick,
 }: {
     employee: Employee;
+    shift?: LocalShift;
     onRemove?: () => void;
     onClick?: () => void;
 }) {
     const employeeColor =
         (employee as Employee & { color?: string }).color || "#3b82f6";
 
+    const { attributes, listeners, setNodeRef, transform, isDragging } =
+        useDraggable({
+            id: shift ? `shift-${shift.id}` : `badge-${employee.id}`,
+            data: {
+                type: "shift",
+                shift,
+                employee,
+            },
+            disabled: !shift,
+        });
+
+    const dragStyle = transform
+        ? {
+              transform: CSS.Translate.toString(transform),
+              zIndex: isDragging ? 1000 : undefined,
+          }
+        : undefined;
+
     return (
         <div
-            onClick={onClick}
-            className={cn(
-                "group flex items-center gap-0.5 sm:gap-1 px-0.5 sm:px-1.5 py-0.5 rounded cursor-pointer",
-                "hover:ring-2 hover:ring-offset-1 transition-all"
-            )}
+            ref={setNodeRef}
             style={{
+                ...dragStyle,
                 backgroundColor: `${employeeColor}20`,
-                borderColor: employeeColor,
             }}
+            {...(shift ? listeners : {})}
+            {...(shift ? attributes : {})}
+            onClick={!isDragging ? onClick : undefined}
+            className={cn(
+                "group relative flex items-center gap-0.5 sm:gap-1 px-0.5 sm:px-1.5 py-0.5 rounded transition-all",
+                shift &&
+                    "cursor-grab active:cursor-grabbing select-none touch-none",
+                !shift && "cursor-pointer",
+                isDragging && "invisible",
+                "hover:ring-2 hover:ring-blue-400 hover:ring-offset-1"
+            )}
         >
             <div
                 className="w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-[8px] sm:text-[10px] font-bold text-white shrink-0"
@@ -128,11 +157,12 @@ export function EmployeeBadge({
                 <button
                     onClick={(e) => {
                         e.stopPropagation();
+                        e.preventDefault();
                         onRemove();
                     }}
-                    className="opacity-0 group-hover:opacity-100 w-3 h-3 sm:w-4 sm:h-4 flex items-center justify-center text-slate-400 hover:text-red-500 transition-opacity text-xs sm:text-sm"
+                    className="absolute -top-1.5 -right-1.5 opacity-0 group-hover:opacity-100 w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded-full shadow-sm transition-all text-xs"
                 >
-                    ×
+                    <X className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                 </button>
             )}
         </div>

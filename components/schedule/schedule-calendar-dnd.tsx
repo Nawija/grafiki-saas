@@ -141,6 +141,7 @@ export function ScheduleCalendarDnD({
 
     const [isSaving, setIsSaving] = useState(false);
     const [activeEmployee, setActiveEmployee] = useState<Employee | null>(null);
+    const [activeShift, setActiveShift] = useState<LocalShift | null>(null);
     const [editingShift, setEditingShift] = useState<LocalShift | null>(null);
     const [mounted, setMounted] = useState(false);
 
@@ -228,6 +229,10 @@ export function ScheduleCalendarDnD({
         const { active } = event;
         if (active.data.current?.type === "employee") {
             setActiveEmployee(active.data.current.employee);
+            setActiveShift(null);
+        } else if (active.data.current?.type === "shift") {
+            setActiveEmployee(active.data.current.employee);
+            setActiveShift(active.data.current.shift);
         }
     }, []);
 
@@ -236,10 +241,11 @@ export function ScheduleCalendarDnD({
         (event: DragEndEvent) => {
             const { active, over } = event;
             setActiveEmployee(null);
+            setActiveShift(null);
 
             if (!over || !active.data.current || !over.data.current) return;
 
-            // Sprawdź czy to pracownik upuszczony na komórkę
+            // PRZYPADEK 1: Pracownik z listy upuszczony na komórkę
             if (
                 active.data.current.type === "employee" &&
                 over.data.current.type === "cell"
@@ -279,6 +285,100 @@ export function ScheduleCalendarDnD({
                 setLocalShifts((prev) => [...prev, newShift]);
                 toast.success(
                     `Przypisano ${employee.first_name} do zmiany "${template.name}"`
+                );
+            }
+
+            // PRZYPADEK 2: Zmiana przeciągnięta na inną komórkę (przeniesienie)
+            if (
+                active.data.current.type === "shift" &&
+                over.data.current.type === "cell"
+            ) {
+                const draggedShift = active.data.current.shift as LocalShift;
+                const draggedEmployee = active.data.current
+                    .employee as Employee;
+                const { date: targetDate, template: targetTemplate } = over.data
+                    .current as {
+                    date: string;
+                    template: ShiftTemplate;
+                };
+
+                // Sprawdź czy to ta sama komórka
+                if (
+                    draggedShift.date === targetDate &&
+                    draggedShift.start_time === targetTemplate.start_time &&
+                    draggedShift.end_time === targetTemplate.end_time
+                ) {
+                    return; // Nie rób nic jeśli upuszczono w tym samym miejscu
+                }
+
+                // Sprawdź czy pracownik ma już zmianę w docelowym dniu
+                const existingShiftInTargetDay = activeShifts.find(
+                    (s) =>
+                        s.employee_id === draggedShift.employee_id &&
+                        s.date === targetDate &&
+                        s.id !== draggedShift.id
+                );
+
+                if (existingShiftInTargetDay) {
+                    toast.error(
+                        `${draggedEmployee.first_name} ${draggedEmployee.last_name} ma już zmianę tego dnia`
+                    );
+                    return;
+                }
+
+                // Przenieś zmianę
+                setLocalShifts((prev) =>
+                    prev.map((s) => {
+                        if (s.id !== draggedShift.id) return s;
+                        return {
+                            ...s,
+                            date: targetDate,
+                            start_time: targetTemplate.start_time,
+                            end_time: targetTemplate.end_time,
+                            break_minutes: targetTemplate.break_minutes,
+                            color: targetTemplate.color,
+                            status: s.status === "new" ? "new" : "modified",
+                        };
+                    })
+                );
+                toast.success(`Przeniesiono zmianę na ${targetDate}`);
+            }
+
+            // PRZYPADEK 3: Zmiana przeciągnięta na inną zmianę (zamiana)
+            if (
+                active.data.current.type === "shift" &&
+                over.data.current.type === "shift"
+            ) {
+                const draggedShift = active.data.current.shift as LocalShift;
+                const targetShift = over.data.current.shift as LocalShift;
+                const draggedEmployee = active.data.current
+                    .employee as Employee;
+                const targetEmployee = over.data.current.employee as Employee;
+
+                if (draggedShift.id === targetShift.id) return;
+
+                // Zamień pracowników między zmianami
+                setLocalShifts((prev) =>
+                    prev.map((s) => {
+                        if (s.id === draggedShift.id) {
+                            return {
+                                ...s,
+                                employee_id: targetShift.employee_id,
+                                status: s.status === "new" ? "new" : "modified",
+                            };
+                        }
+                        if (s.id === targetShift.id) {
+                            return {
+                                ...s,
+                                employee_id: draggedShift.employee_id,
+                                status: s.status === "new" ? "new" : "modified",
+                            };
+                        }
+                        return s;
+                    })
+                );
+                toast.success(
+                    `Zamieniono zmiany między ${draggedEmployee.first_name} a ${targetEmployee.first_name}`
                 );
             }
         },
@@ -556,7 +656,6 @@ export function ScheduleCalendarDnD({
                                 }}
                             >
                                 <div className="p-1 sm:p-2 bg-slate-50 border-r border-b border-slate-200 flex items-center">
-                                    
                                     <span className="font-medium capitalize text-xs sm:text-sm text-slate-700 ">
                                         {format(
                                             new Date(year, month - 1),
@@ -646,7 +745,6 @@ export function ScheduleCalendarDnD({
                                                 backgroundColor: `${template.color}15`,
                                             }}
                                         >
-                                            
                                             <div className="min-w-0">
                                                 <div className="font-medium text-[10px] sm:text-sm text-slate-900 truncate">
                                                     {template.name}
