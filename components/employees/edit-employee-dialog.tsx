@@ -56,7 +56,9 @@ export function EditEmployeeDialog({
 }: EditEmployeeDialogProps) {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
-    const [selectedColor, setSelectedColor] = useState(employee.color || "#3b82f6");
+    const [selectedColor, setSelectedColor] = useState(
+        employee.color || "#3b82f6"
+    );
 
     const {
         register,
@@ -238,11 +240,12 @@ export function EditEmployeeDialog({
                             <Label>Kolor pracownika</Label>
                         </div>
                         <div className="flex items-center gap-3">
-                            <div 
+                            <div
                                 className="w-10 h-10 rounded-full border-2 border-muted flex items-center justify-center text-white font-semibold text-sm shadow-sm"
                                 style={{ backgroundColor: selectedColor }}
                             >
-                                {employee.first_name[0]}{employee.last_name[0]}
+                                {employee.first_name[0]}
+                                {employee.last_name[0]}
                             </div>
                             <div className="flex flex-wrap gap-1.5">
                                 {PRESET_COLORS.map((color) => (
@@ -252,8 +255,8 @@ export function EditEmployeeDialog({
                                         onClick={() => setSelectedColor(color)}
                                         className={cn(
                                             "w-7 h-7 rounded-full transition-all hover:scale-110",
-                                            selectedColor === color 
-                                                ? "ring-2 ring-offset-2 ring-primary" 
+                                            selectedColor === color
+                                                ? "ring-2 ring-offset-2 ring-primary"
                                                 : "hover:ring-2 hover:ring-offset-1 hover:ring-muted-foreground/30"
                                         )}
                                         style={{ backgroundColor: color }}
