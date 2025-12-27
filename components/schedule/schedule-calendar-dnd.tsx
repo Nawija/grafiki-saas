@@ -262,8 +262,12 @@ export function ScheduleCalendarDnD({
                 );
 
                 if (existingShift) {
-                    toast.error(
-                        `${employee.first_name} ${employee.last_name} ma już zmianę tego dnia`
+                    toast.warning(
+                        `${employee.first_name} ${employee.last_name} już pracuje tego dnia!`,
+                        {
+                            description:
+                                "Pracownik może mieć tylko jedną zmianę dziennie.",
+                        }
                     );
                     return;
                 }
@@ -283,9 +287,35 @@ export function ScheduleCalendarDnD({
                 };
 
                 setLocalShifts((prev) => [...prev, newShift]);
-                toast.success(
-                    `Przypisano ${employee.first_name} do zmiany "${template.name}"`
-                );
+
+                // Sprawdź czy pracownik przekroczy wymagane godziny
+                const hours = employeeHoursMap.get(employee.id);
+                if (hours) {
+                    // Oblicz godziny nowej zmiany
+                    const [startH, startM] = template.start_time
+                        .split(":")
+                        .map(Number);
+                    const [endH, endM] = template.end_time
+                        .split(":")
+                        .map(Number);
+                    let shiftMinutes =
+                        endH * 60 + endM - (startH * 60 + startM);
+                    if (shiftMinutes < 0) shiftMinutes += 24 * 60;
+                    const shiftHours =
+                        (shiftMinutes - template.break_minutes) / 60;
+
+                    const newTotal = hours.scheduled + shiftHours;
+                    if (newTotal > hours.required && hours.required > 0) {
+                        toast.warning(
+                            `${employee.first_name} ${employee.last_name} przekracza limit godzin!`,
+                            {
+                                description: `Po tej zmianie: ${Math.round(
+                                    newTotal
+                                )}h / ${hours.required}h wymaganych`,
+                            }
+                        );
+                    }
+                }
             }
 
             // PRZYPADEK 2: Zmiana przeciągnięta na inną komórkę (przeniesienie)
@@ -320,8 +350,12 @@ export function ScheduleCalendarDnD({
                 );
 
                 if (existingShiftInTargetDay) {
-                    toast.error(
-                        `${draggedEmployee.first_name} ${draggedEmployee.last_name} ma już zmianę tego dnia`
+                    toast.warning(
+                        `${draggedEmployee.first_name} ${draggedEmployee.last_name} już pracuje tego dnia!`,
+                        {
+                            description:
+                                "Pracownik może mieć tylko jedną zmianę dziennie.",
+                        }
                     );
                     return;
                 }
@@ -341,7 +375,6 @@ export function ScheduleCalendarDnD({
                         };
                     })
                 );
-                toast.success(`Przeniesiono zmianę na ${targetDate}`);
             }
 
             // PRZYPADEK 3: Zmiana przeciągnięta na inną zmianę (zamiana)
@@ -377,12 +410,9 @@ export function ScheduleCalendarDnD({
                         return s;
                     })
                 );
-                toast.success(
-                    `Zamieniono zmiany między ${draggedEmployee.first_name} a ${targetEmployee.first_name}`
-                );
             }
         },
-        [activeShifts, scheduleId]
+        [activeShifts, scheduleId, employeeHoursMap]
     );
 
     // Usuń zmianę
