@@ -16,7 +16,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-import { Loader2, Settings2 } from "lucide-react";
+import { Loader2, Calendar, Clock, Gauge, CalendarCheck, FileText, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -182,222 +182,227 @@ export function EmployeePreferencesDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2">
-                        <Settings2 className="h-5 w-5" />
-                        Preferencje pracownika
-                    </DialogTitle>
-                    <DialogDescription>
-                        {employee.first_name} {employee.last_name}
-                    </DialogDescription>
+            <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader className="pb-4 border-b">
+                    <div className="flex items-center gap-3">
+                        <div 
+                            className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm"
+                            style={{ backgroundColor: employee.color || '#3b82f6' }}
+                        >
+                            {employee.first_name[0]}{employee.last_name[0]}
+                        </div>
+                        <div>
+                            <DialogTitle className="text-lg">
+                                Preferencje pracownika
+                            </DialogTitle>
+                            <DialogDescription className="mt-0.5">
+                                {employee.first_name} {employee.last_name}
+                            </DialogDescription>
+                        </div>
+                    </div>
                 </DialogHeader>
 
                 {isLoading ? (
-                    <div className="flex items-center justify-center py-8">
+                    <div className="flex items-center justify-center py-12">
                         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                     </div>
                 ) : (
-                    <div className="space-y-6">
+                    <div className="space-y-5 pt-2">
                         {/* Preferowane dni */}
-                        <div className="space-y-3">
-                            <Label className="text-base font-medium">
-                                Preferowane dni pracy
-                            </Label>
-                            <p className="text-sm text-muted-foreground">
-                                Wybierz dni, w które pracownik preferuje
-                                pracować
-                            </p>
+                        <div className="rounded-lg border bg-card p-4">
+                            <div className="flex items-center gap-2 mb-3">
+                                <div className="p-1.5 rounded-md bg-green-500/10">
+                                    <Check className="h-4 w-4 text-green-600" />
+                                </div>
+                                <div>
+                                    <h4 className="font-medium text-sm">Preferowane dni</h4>
+                                    <p className="text-xs text-muted-foreground">Dni, w które pracownik chce pracować</p>
+                                </div>
+                            </div>
                             <div className="flex flex-wrap gap-2">
-                                {DAYS_OF_WEEK.map((day) => (
-                                    <button
-                                        key={`pref-${day.value}`}
-                                        type="button"
-                                        onClick={() =>
-                                            togglePreferredDay(day.value)
-                                        }
-                                        className={cn(
-                                            "px-3 py-2 rounded-md text-sm font-medium transition-colors border",
-                                            preferences.preferred_days.includes(
-                                                day.value
-                                            )
-                                                ? "bg-green-500 text-white border-green-500"
-                                                : "bg-background hover:bg-muted border-input"
-                                        )}
-                                        title={day.fullLabel}
-                                    >
-                                        {day.label}
-                                    </button>
-                                ))}
+                                {DAYS_OF_WEEK.map((day) => {
+                                    const isSelected = preferences.preferred_days.includes(day.value);
+                                    return (
+                                        <button
+                                            key={`pref-${day.value}`}
+                                            type="button"
+                                            onClick={() => togglePreferredDay(day.value)}
+                                            className={cn(
+                                                "w-11 h-11 rounded-lg text-sm font-medium transition-all border-2",
+                                                isSelected
+                                                    ? "bg-green-500 text-white border-green-500 shadow-sm"
+                                                    : "bg-background hover:bg-green-50 hover:border-green-200 border-transparent"
+                                            )}
+                                            title={day.fullLabel}
+                                        >
+                                            {day.label}
+                                        </button>
+                                    );
+                                })}
                             </div>
                         </div>
 
                         {/* Niedostępne dni */}
-                        <div className="space-y-3">
-                            <Label className="text-base font-medium">
-                                Dni niedostępności
-                            </Label>
-                            <p className="text-sm text-muted-foreground">
-                                Wybierz dni, w które pracownik NIE może pracować
-                            </p>
+                        <div className="rounded-lg border bg-card p-4">
+                            <div className="flex items-center gap-2 mb-3">
+                                <div className="p-1.5 rounded-md bg-red-500/10">
+                                    <X className="h-4 w-4 text-red-600" />
+                                </div>
+                                <div>
+                                    <h4 className="font-medium text-sm">Dni niedostępności</h4>
+                                    <p className="text-xs text-muted-foreground">Dni, w które pracownik NIE może pracować</p>
+                                </div>
+                            </div>
                             <div className="flex flex-wrap gap-2">
-                                {DAYS_OF_WEEK.map((day) => (
-                                    <button
-                                        key={`unavail-${day.value}`}
-                                        type="button"
-                                        onClick={() =>
-                                            toggleUnavailableDay(day.value)
-                                        }
-                                        className={cn(
-                                            "px-3 py-2 rounded-md text-sm font-medium transition-colors border",
-                                            preferences.unavailable_days.includes(
-                                                day.value
-                                            )
-                                                ? "bg-red-500 text-white border-red-500"
-                                                : "bg-background hover:bg-muted border-input"
-                                        )}
-                                        title={day.fullLabel}
-                                    >
-                                        {day.label}
-                                    </button>
-                                ))}
+                                {DAYS_OF_WEEK.map((day) => {
+                                    const isSelected = preferences.unavailable_days.includes(day.value);
+                                    return (
+                                        <button
+                                            key={`unavail-${day.value}`}
+                                            type="button"
+                                            onClick={() => toggleUnavailableDay(day.value)}
+                                            className={cn(
+                                                "w-11 h-11 rounded-lg text-sm font-medium transition-all border-2",
+                                                isSelected
+                                                    ? "bg-red-500 text-white border-red-500 shadow-sm"
+                                                    : "bg-background hover:bg-red-50 hover:border-red-200 border-transparent"
+                                            )}
+                                            title={day.fullLabel}
+                                        >
+                                            {day.label}
+                                        </button>
+                                    );
+                                })}
                             </div>
                         </div>
 
-                        {/* Preferowane godziny */}
-                        <div className="space-y-3">
-                            <Label className="text-base font-medium">
-                                Preferowane godziny pracy
-                            </Label>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="startTime">Od</Label>
-                                    <Input
-                                        id="startTime"
-                                        type="time"
-                                        value={
-                                            preferences.preferred_start_time ||
-                                            ""
-                                        }
-                                        onChange={(e) =>
-                                            setPreferences((prev) => ({
-                                                ...prev,
-                                                preferred_start_time:
-                                                    e.target.value || null,
-                                            }))
-                                        }
-                                    />
+                        {/* Preferowane godziny i limity w grid */}
+                        <div className="grid sm:grid-cols-2 gap-4">
+                            {/* Preferowane godziny */}
+                            <div className="rounded-lg border bg-card p-4">
+                                <div className="flex items-center gap-2 mb-3">
+                                    <div className="p-1.5 rounded-md bg-blue-500/10">
+                                        <Clock className="h-4 w-4 text-blue-600" />
+                                    </div>
+                                    <h4 className="font-medium text-sm">Preferowane godziny</h4>
                                 </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="endTime">Do</Label>
-                                    <Input
-                                        id="endTime"
-                                        type="time"
-                                        value={
-                                            preferences.preferred_end_time || ""
-                                        }
-                                        onChange={(e) =>
-                                            setPreferences((prev) => ({
-                                                ...prev,
-                                                preferred_end_time:
-                                                    e.target.value || null,
-                                            }))
-                                        }
-                                    />
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div className="space-y-1.5">
+                                        <Label htmlFor="startTime" className="text-xs text-muted-foreground">Od</Label>
+                                        <Input
+                                            id="startTime"
+                                            type="time"
+                                            className="h-9"
+                                            value={preferences.preferred_start_time || ""}
+                                            onChange={(e) =>
+                                                setPreferences((prev) => ({
+                                                    ...prev,
+                                                    preferred_start_time: e.target.value || null,
+                                                }))
+                                            }
+                                        />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <Label htmlFor="endTime" className="text-xs text-muted-foreground">Do</Label>
+                                        <Input
+                                            id="endTime"
+                                            type="time"
+                                            className="h-9"
+                                            value={preferences.preferred_end_time || ""}
+                                            onChange={(e) =>
+                                                setPreferences((prev) => ({
+                                                    ...prev,
+                                                    preferred_end_time: e.target.value || null,
+                                                }))
+                                            }
+                                        />
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        {/* Limity godzin */}
-                        <div className="space-y-3">
-                            <Label className="text-base font-medium">
-                                Limity godzin pracy
-                            </Label>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="maxDaily">
-                                        Maks. dziennie (h)
-                                    </Label>
-                                    <Input
-                                        id="maxDaily"
-                                        type="number"
-                                        min="1"
-                                        max="24"
-                                        value={
-                                            preferences.max_hours_per_day || ""
-                                        }
-                                        onChange={(e) =>
-                                            setPreferences((prev) => ({
-                                                ...prev,
-                                                max_hours_per_day: e.target
-                                                    .value
-                                                    ? parseInt(e.target.value)
-                                                    : null,
-                                            }))
-                                        }
-                                        placeholder="np. 8"
-                                    />
+                            {/* Limity godzin */}
+                            <div className="rounded-lg border bg-card p-4">
+                                <div className="flex items-center gap-2 mb-3">
+                                    <div className="p-1.5 rounded-md bg-orange-500/10">
+                                        <Gauge className="h-4 w-4 text-orange-600" />
+                                    </div>
+                                    <h4 className="font-medium text-sm">Limity godzin</h4>
                                 </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="maxWeekly">
-                                        Maks. tygodniowo (h)
-                                    </Label>
-                                    <Input
-                                        id="maxWeekly"
-                                        type="number"
-                                        min="1"
-                                        max="168"
-                                        value={
-                                            preferences.max_hours_per_week || ""
-                                        }
-                                        onChange={(e) =>
-                                            setPreferences((prev) => ({
-                                                ...prev,
-                                                max_hours_per_week: e.target
-                                                    .value
-                                                    ? parseInt(e.target.value)
-                                                    : null,
-                                            }))
-                                        }
-                                        placeholder="np. 40"
-                                    />
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div className="space-y-1.5">
+                                        <Label htmlFor="maxDaily" className="text-xs text-muted-foreground">Dziennie (h)</Label>
+                                        <Input
+                                            id="maxDaily"
+                                            type="number"
+                                            min="1"
+                                            max="24"
+                                            className="h-9"
+                                            value={preferences.max_hours_per_day || ""}
+                                            onChange={(e) =>
+                                                setPreferences((prev) => ({
+                                                    ...prev,
+                                                    max_hours_per_day: e.target.value ? parseInt(e.target.value) : null,
+                                                }))
+                                            }
+                                            placeholder="8"
+                                        />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <Label htmlFor="maxWeekly" className="text-xs text-muted-foreground">Tygodniowo (h)</Label>
+                                        <Input
+                                            id="maxWeekly"
+                                            type="number"
+                                            min="1"
+                                            max="168"
+                                            className="h-9"
+                                            value={preferences.max_hours_per_week || ""}
+                                            onChange={(e) =>
+                                                setPreferences((prev) => ({
+                                                    ...prev,
+                                                    max_hours_per_week: e.target.value ? parseInt(e.target.value) : null,
+                                                }))
+                                            }
+                                            placeholder="40"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Dostępność w weekendy i święta */}
-                        <div className="space-y-3">
-                            <Label className="text-base font-medium">
-                                Dostępność specjalna
-                            </Label>
-                            <div className="space-y-3">
-                                <label className="flex items-center gap-3 cursor-pointer">
+                        {/* Dostępność specjalna */}
+                        <div className="rounded-lg border bg-card p-4">
+                            <div className="flex items-center gap-2 mb-3">
+                                <div className="p-1.5 rounded-md bg-purple-500/10">
+                                    <CalendarCheck className="h-4 w-4 text-purple-600" />
+                                </div>
+                                <h4 className="font-medium text-sm">Dostępność specjalna</h4>
+                            </div>
+                            <div className="flex flex-wrap gap-4">
+                                <label className="flex items-center gap-2 cursor-pointer group">
                                     <Checkbox
                                         checked={preferences.can_work_weekends}
                                         onCheckedChange={(checked) =>
                                             setPreferences((prev) => ({
                                                 ...prev,
-                                                can_work_weekends:
-                                                    checked === true,
+                                                can_work_weekends: checked === true,
                                             }))
                                         }
                                     />
-                                    <span className="text-sm">
+                                    <span className="text-sm group-hover:text-foreground text-muted-foreground transition-colors">
                                         Może pracować w weekendy
                                     </span>
                                 </label>
-                                <label className="flex items-center gap-3 cursor-pointer">
+                                <label className="flex items-center gap-2 cursor-pointer group">
                                     <Checkbox
                                         checked={preferences.can_work_holidays}
                                         onCheckedChange={(checked) =>
                                             setPreferences((prev) => ({
                                                 ...prev,
-                                                can_work_holidays:
-                                                    checked === true,
+                                                can_work_holidays: checked === true,
                                             }))
                                         }
                                     />
-                                    <span className="text-sm">
+                                    <span className="text-sm group-hover:text-foreground text-muted-foreground transition-colors">
                                         Może pracować w święta
                                     </span>
                                 </label>
@@ -405,8 +410,13 @@ export function EmployeePreferencesDialog({
                         </div>
 
                         {/* Notatki */}
-                        <div className="space-y-2">
-                            <Label htmlFor="notes">Dodatkowe uwagi</Label>
+                        <div className="rounded-lg border bg-card p-4">
+                            <div className="flex items-center gap-2 mb-3">
+                                <div className="p-1.5 rounded-md bg-slate-500/10">
+                                    <FileText className="h-4 w-4 text-slate-600" />
+                                </div>
+                                <h4 className="font-medium text-sm">Dodatkowe uwagi</h4>
+                            </div>
                             <Textarea
                                 id="notes"
                                 value={preferences.notes || ""}
@@ -416,13 +426,14 @@ export function EmployeePreferencesDialog({
                                         notes: e.target.value || null,
                                     }))
                                 }
-                                placeholder="np. Student - dostępny tylko po 15:00"
-                                rows={3}
+                                placeholder="np. Student - dostępny tylko po 15:00, preferencje weekendów zmiennych..."
+                                rows={2}
+                                className="resize-none"
                             />
                         </div>
 
                         {/* Przyciski */}
-                        <div className="flex justify-end gap-2 pt-4 border-t">
+                        <div className="flex justify-end gap-2 pt-2">
                             <Button
                                 type="button"
                                 variant="outline"

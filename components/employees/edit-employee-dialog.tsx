@@ -25,7 +25,23 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2 } from "lucide-react";
+import { Loader2, Palette } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+const PRESET_COLORS = [
+    "#3b82f6", // blue
+    "#8b5cf6", // violet
+    "#ec4899", // pink
+    "#ef4444", // red
+    "#f97316", // orange
+    "#eab308", // yellow
+    "#22c55e", // green
+    "#14b8a6", // teal
+    "#06b6d4", // cyan
+    "#6366f1", // indigo
+    "#a855f7", // purple
+    "#f43f5e", // rose
+];
 
 interface EditEmployeeDialogProps {
     employee: Employee;
@@ -40,6 +56,7 @@ export function EditEmployeeDialog({
 }: EditEmployeeDialogProps) {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
+    const [selectedColor, setSelectedColor] = useState(employee.color || "#3b82f6");
 
     const {
         register,
@@ -79,6 +96,7 @@ export function EditEmployeeDialog({
                         data.employmentType === "custom"
                             ? data.customHours
                             : null,
+                    color: selectedColor,
                     updated_at: new Date().toISOString(),
                 })
                 .eq("id", employee.id);
@@ -212,6 +230,46 @@ export function EditEmployeeDialog({
                             )}
                         </div>
                     )}
+
+                    {/* Color Picker */}
+                    <div className="space-y-3">
+                        <div className="flex items-center gap-2">
+                            <Palette className="h-4 w-4 text-muted-foreground" />
+                            <Label>Kolor pracownika</Label>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <div 
+                                className="w-10 h-10 rounded-full border-2 border-muted flex items-center justify-center text-white font-semibold text-sm shadow-sm"
+                                style={{ backgroundColor: selectedColor }}
+                            >
+                                {employee.first_name[0]}{employee.last_name[0]}
+                            </div>
+                            <div className="flex flex-wrap gap-1.5">
+                                {PRESET_COLORS.map((color) => (
+                                    <button
+                                        key={color}
+                                        type="button"
+                                        onClick={() => setSelectedColor(color)}
+                                        className={cn(
+                                            "w-7 h-7 rounded-full transition-all hover:scale-110",
+                                            selectedColor === color 
+                                                ? "ring-2 ring-offset-2 ring-primary" 
+                                                : "hover:ring-2 hover:ring-offset-1 hover:ring-muted-foreground/30"
+                                        )}
+                                        style={{ backgroundColor: color }}
+                                        title={color}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                        <Input
+                            type="color"
+                            value={selectedColor}
+                            onChange={(e) => setSelectedColor(e.target.value)}
+                            className="h-8 w-20 p-1 cursor-pointer"
+                            disabled={isLoading}
+                        />
+                    </div>
 
                     <div className="flex justify-end gap-2 pt-4">
                         <Button

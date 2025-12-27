@@ -117,7 +117,7 @@ export function EmployeesList({
                                             onClick={() =>
                                                 setPreferencesEmployee(employee)
                                             }
-                                            className="h-7 text-xs"
+                                            className="h-7 text-xs lg:flex hidden"
                                         >
                                             <Settings2 className="mr-1 h-3 w-3" />
                                             Preferencje
@@ -197,7 +197,7 @@ export function EmployeesList({
             </div>
 
             {/* Widok desktop - tabela */}
-            <Card className="hidden sm:block">
+            <Card className="hidden sm:block px-4">
                 <Table>
                     <TableHeader>
                         <TableRow>
